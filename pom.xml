@@ -10,7 +10,7 @@
 		<relativePath /> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.ssafy</groupId>
-	<artifactId>SSAFYHome-BE</artifactId>
+	<artifactId>SSAFYHome</artifactId>
 	<version>1.0.0</version>
 	<name>SSAFYHome-BE</name>
 	<description>SSAFYHome 실거래가 분석 및 추천 서비스 백엔드</description>
