@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.ssafyhome.user.dto.RegisterRequest;
+import com.ssafyhome.user.dto.UserRegisterRequest;
 import com.ssafyhome.user.service.UserService;
 
 import lombok.RequiredArgsConstructor;
@@ -27,7 +27,7 @@ public class UserController {
             value    = "/register",
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE
     )
-    public ResponseEntity<String> signup(@RequestPart("data") RegisterRequest request, @RequestPart(value = "profileImage", required = false) MultipartFile profileImage) {
+    public ResponseEntity<String> signup(@RequestPart("data") UserRegisterRequest request, @RequestPart(value = "profileImage", required = false) MultipartFile profileImage) {
         request.setProfileImage(profileImage);
         userService.signup(request);
         return ResponseEntity.ok("회원가입 성공");

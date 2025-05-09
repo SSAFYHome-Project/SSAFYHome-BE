@@ -10,8 +10,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.ssafyhome.security.dto.CustomUserDetails;
 import com.ssafyhome.user.dao.UserRepository;
-import com.ssafyhome.user.dto.PatchRequest;
-import com.ssafyhome.user.dto.RegisterRequest;
+import com.ssafyhome.user.dto.UserPatchRequest;
+import com.ssafyhome.user.dto.UserRegisterRequest;
 import com.ssafyhome.user.dto.User;
 import com.ssafyhome.user.dto.UserInfo;
 
@@ -26,7 +26,7 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
 
     @Transactional
-    public void signup(RegisterRequest request) {
+    public void signup(UserRegisterRequest request) {
         if (isEmailDuplicate(request.getEmail())) {
             throw new IllegalArgumentException("이미 사용 중인 이메일입니다: " + request.getEmail());
         }
@@ -43,7 +43,7 @@ public class UserService {
                 byte[] profileBytes = profileFile.getBytes();
                 user.setProfile(profileBytes);   // User 엔티티에 byte[] 또는 Blob setter 가 필요
             } catch (IOException e) {
-                throw new RuntimeException("프로필 이미지 저장 중 오류 발생", e);
+                throw new RuntimeException("프로필 이미지 저장 중 오류가 발생했습니다.", e);
             }
         }
 
@@ -58,12 +58,12 @@ public class UserService {
     @Transactional(readOnly = true) // 데이터 조회 작업
     public UserInfo getUserInfoFromDetails(CustomUserDetails userDetails) {
         if (userDetails == null) {
-            throw new IllegalArgumentException("UserDetails 정보가 없습니다.");
+            throw new IllegalArgumentException("인증 정보가 유효하지 않습니다.");
         }
 
         User user = userDetails.getUser();
         if (user == null) {
-            throw new EntityNotFoundException("연결된 사용자 정보를 찾을 수 없습니다.");
+            throw new EntityNotFoundException("사용자 정보를 찾을 수 없습니다.");
         }
 
         // User 엔티티 정보를 UserInfo DTO로 변환
@@ -88,7 +88,7 @@ public class UserService {
     }
 
     @Transactional
-    public void updateUserInfo(CustomUserDetails userDetails, PatchRequest request) {
+    public void updateUserInfo(CustomUserDetails userDetails, UserPatchRequest request) {
         if (userDetails == null) {
             throw new IllegalArgumentException("인증 정보가 유효하지 않습니다.");
         }
@@ -100,14 +100,6 @@ public class UserService {
             user.setName(request.getName());
         }
 
-        String newEmail = request.getEmail();
-        if (StringUtils.hasText(newEmail) && !newEmail.equalsIgnoreCase(user.getEmail())) {
-            // 변경하려는 새 이메일이 이미 다른 사용자에 의해 사용 중인지 확인
-            if (isEmailDuplicate(newEmail)) {
-                throw new IllegalArgumentException("이미 사용 중인 이메일입니다: " + newEmail);
-            }
-            user.setEmail(newEmail);
-        }
 
         MultipartFile profileFile = request.getProfile();
         if (profileFile != null && !profileFile.isEmpty()) {

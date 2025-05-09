@@ -5,7 +5,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 
 @SpringBootApplication
-@EntityScan("com.ssafyhome.user.dto")
+@EntityScan("com.ssafyhome")
 public class SsafyHomeApplication {
 
 	public static void main(String[] args) {
