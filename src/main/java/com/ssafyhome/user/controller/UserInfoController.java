@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.ssafyhome.security.dto.CustomUserDetails;
-import com.ssafyhome.user.dto.PatchRequest;
+import com.ssafyhome.user.dto.UserPatchRequest;
 import com.ssafyhome.user.dto.UserInfo;
 import com.ssafyhome.user.service.UserService;
 
@@ -40,11 +40,11 @@ public class UserInfoController {
 
     @PatchMapping(value = "/info", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> patchUserInfo(@AuthenticationPrincipal CustomUserDetails userDetails,
-                                           @RequestPart("data") PatchRequest patchRequest,
+                                           @RequestPart("data") UserPatchRequest userPatchRequest,
                                            @RequestPart(value = "profileImage", required = false) MultipartFile profileFile) {
 
         try {
-            userService.updateUserInfo(userDetails, patchRequest);
+            userService.updateUserInfo(userDetails, userPatchRequest);
 
             return ResponseEntity.ok("회원 정보가 성공적으로 업데이트되었습니다.");
 

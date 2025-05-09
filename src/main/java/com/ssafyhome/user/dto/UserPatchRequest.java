@@ -6,9 +6,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 @Getter
 @Setter
-public class PatchRequest {
+public class UserPatchRequest {
 	private String name;
-    private String email;
     private String password;
     private MultipartFile profile;
 }
