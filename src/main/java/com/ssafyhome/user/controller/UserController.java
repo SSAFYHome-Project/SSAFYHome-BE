@@ -23,15 +23,16 @@ public class UserController {
     private final UserService userService;
 
     //form-data로 전송
-    @PostMapping(
-            value    = "/register",
-            consumes = MediaType.MULTIPART_FORM_DATA_VALUE
-    )
-    public ResponseEntity<String> signup(@RequestPart("data") UserRegisterRequest request, @RequestPart(value = "profileImage", required = false) MultipartFile profileImage) {
+    @PostMapping(value = "/register", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<String> signup(
+        @RequestPart("data") UserRegisterRequest request,
+        @RequestPart(value = "profileImage", required = false) MultipartFile profileImage
+    ) {
         request.setProfileImage(profileImage);
         userService.signup(request);
         return ResponseEntity.ok("회원가입 성공");
     }
+
 
     @GetMapping("/register/dup")
     public ResponseEntity<Boolean> checkEmailDuplicate(@RequestParam String email) {
