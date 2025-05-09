@@ -65,7 +65,7 @@ public class BookmarkService {
 
         Bookmark bookmark = bookmarkRepository.findById(bookmarkIdx)
                 .orElseThrow(() -> new EntityNotFoundException("해당 북마크를 찾을 수 없습니다."));
-        
+
         if (bookmark.getUser().getMno() != user.getMno()) {
             throw new SecurityException("북마크로 해두지 않았습니다.");
         }
