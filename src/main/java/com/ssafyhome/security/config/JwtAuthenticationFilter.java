@@ -34,27 +34,23 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
-        // 1) 토큰 추출
+        // 토큰 추출
         String token = jwtProvider.resolveToken(req);
 
-        // 2) 요청 URL과 토큰을 로그로 찍어보기
-        log.info("[JWT Filter] request URL: {}", req.getRequestURL());
-        log.info("[JWT Filter] token: {}", token);
-
-        // 3) 토큰 유효성 검사
+        // 토큰 유효성 검사
         if (token != null && jwtProvider.validateToken(token)) {
-            // 4) Redis에서 해당 토큰의 로그아웃 여부 확인
+            // Redis에서 해당 토큰의 로그아웃 여부 확인
             String isLogout = redisTemplate.opsForValue().get(token);
             if (isLogout == null) {
-                // 5) 토큰이 유효하고, 로그아웃 처리된 적이 없으면 Authentication 생성
+                // 토큰이 유효하고, 로그아웃 처리된 적이 없으면 Authentication 생성
                 Authentication auth = jwtProvider.getAuthentication(token);
-                // 6) SecurityContext에 저장
+                // SecurityContext에 저장
                 SecurityContextHolder.getContext().setAuthentication(auth);
                 log.info("[JWT Filter] Authentication set for user: {}", auth.getName());
             }
         }
 
-        // 7) 필터 체인 계속
+        // 필터 체인 계속
         chain.doFilter(req, res);
     }
 }
