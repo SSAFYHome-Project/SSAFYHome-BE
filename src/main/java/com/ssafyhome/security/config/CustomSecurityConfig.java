@@ -35,27 +35,18 @@ public class CustomSecurityConfig {
 
     @Bean
     SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http
-                // CSRF 비활성화
-                .csrf(AbstractHttpConfigurer::disable)
-
-                // 세션 사용 안 함 (JWT 방식)
-                .sessionManagement(sm -> sm
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                )
-
-                // 엔드포인트 권한 설정
-                .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/api/map/**", "/api/login", "api/user/register/**").permitAll()
-//                        .requestMatchers("/secured/user/**").hasRole("USER")
-//                        .requestMatchers("/secured/admin/**").hasRole("ADMIN")
-                        .anyRequest().authenticated()
-                )
-
-                // 로그인 필터 대신 AuthenticationManager로 로그인 엔드포인트 구현
-                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider, redisTemplate),
-                        UsernamePasswordAuthenticationFilter.class)
-        ;
+    	http
+        .csrf(AbstractHttpConfigurer::disable)
+        .formLogin(AbstractHttpConfigurer::disable)
+        .sessionManagement(sm -> sm
+            .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+        )
+        .authorizeHttpRequests(authorize -> authorize
+            .requestMatchers("/api/map/**", "/api/login", "/api/user/register/**").permitAll()
+            .anyRequest().authenticated()
+        )
+        .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider, redisTemplate),
+            UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
