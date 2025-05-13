@@ -38,18 +38,18 @@ public class RecentViewController {
     }
 
     @PostMapping("/recentView")
-    @GetMapping("/recentView")
-    public ResponseEntity<?> getRecentViewed(@AuthenticationPrincipal CustomUserDetails userDetails) {
+    public ResponseEntity<?> saveRecentViewed(@RequestBody DealInfo dealInfo,
+                                              @AuthenticationPrincipal CustomUserDetails userDetails) {
         try {
-            List<DealInfo> recentList = recentViewService.getRecentView(userDetails);
-            return ResponseEntity.ok(recentList);
+            recentViewService.saveRecentView(userDetails, dealInfo);
+            return ResponseEntity.ok("최근 본 매물에 추가되었습니다.");
         } catch (EntityNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("최근 본 매물 조회 중 오류가 발생했습니다.");
+                    .body("최근 본 매물 저장 중 오류가 발생했습니다.");
         }
     }
 
