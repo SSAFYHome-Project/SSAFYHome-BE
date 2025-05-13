@@ -3,10 +3,11 @@ package com.ssafyhome.map.controller;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import com.ssafyhome.deal.dto.DealInfo;
+import com.ssafyhome.recentSearch.service.RecentViewService;
+import com.ssafyhome.security.dto.CustomUserDetails;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ssafyhome.map.api.ApartmentDealApiClient;
