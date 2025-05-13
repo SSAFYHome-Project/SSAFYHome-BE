@@ -35,6 +35,7 @@ public class ApartmentDealApiClient {
         urlBuilder.append("&LAWD_CD=").append(lawdCd);
         urlBuilder.append("&DEAL_YMD=").append(dealYmd);
         urlBuilder.append("&_type=json");
+        urlBuilder.append("&numOfRows=9999");
 
         URL url = new URL(urlBuilder.toString());
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
