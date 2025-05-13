@@ -38,9 +38,9 @@ public class MapDataController {
     }
 
     @GetMapping("/search")
-    public Map<String, Object> getDeals(@RequestParam int dongCode, @RequestParam int yyyymm) throws Exception {
-        String tradeJson = apartmentDealApiClient.fetchTradeDeals(dongCode, yyyymm);
-        String rentJson = apartmentDealApiClient.fetchRentDeals(dongCode, yyyymm);
+    public Map<String, Object> getDeals(@RequestParam int regionCode, @RequestParam int yyyymm) throws Exception {
+        String tradeJson = apartmentDealApiClient.fetchTradeDeals(regionCode, yyyymm);
+        String rentJson = apartmentDealApiClient.fetchRentDeals(regionCode, yyyymm);
 
         Map<String, Object> result = new HashMap<>();
         result.put("trade", new ObjectMapper().readTree(tradeJson));
@@ -48,5 +48,4 @@ public class MapDataController {
 
         return result;
     }
-
-}  
+}
