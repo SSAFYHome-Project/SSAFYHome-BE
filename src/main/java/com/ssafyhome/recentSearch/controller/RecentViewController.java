@@ -1,7 +1,6 @@
 package com.ssafyhome.recentSearch.controller;
 
 import com.ssafyhome.deal.dto.DealInfo;
-import com.ssafyhome.recentSearch.dto.RecentView;
 import com.ssafyhome.recentSearch.service.RecentViewService;
 import com.ssafyhome.security.dto.CustomUserDetails;
 import jakarta.persistence.EntityNotFoundException;
@@ -24,9 +23,7 @@ public class RecentViewController {
         try {
 
             List<DealInfo> recentViewInfo =  recentViewService.getRecentView(userDetails);
-
-            RecentView recentView = new RecentView(userDetails.getUsername(), recentViewInfo);
-            return ResponseEntity.ok(recentView);
+            return ResponseEntity.ok(recentViewInfo);
         } catch (EntityNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (IllegalArgumentException e) {
