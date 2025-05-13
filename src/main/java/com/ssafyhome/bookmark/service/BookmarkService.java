@@ -2,13 +2,14 @@ package com.ssafyhome.bookmark.service;
 
 import com.ssafyhome.bookmark.dao.BookmarkRepository;
 import com.ssafyhome.bookmark.dto.Bookmark;
-import com.ssafyhome.bookmark.dto.BookmarkInfo;
+import com.ssafyhome.deal.dto.DealInfo;
+import com.ssafyhome.deal.dao.DealRepository;
+import com.ssafyhome.deal.dto.Deal;
 import com.ssafyhome.security.dto.CustomUserDetails;
 import com.ssafyhome.user.dto.User;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.List;
 
@@ -16,6 +17,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class BookmarkService {
     private final BookmarkRepository bookmarkRepository;
+    private final DealRepository dealRepository;
 
     public List<Bookmark> getBookmark(CustomUserDetails userDetails) {
         if (userDetails == null) {
@@ -31,7 +33,7 @@ public class BookmarkService {
         return bookmarkRepository.findByUser(userDetails.getUser());
     }
 
-    public void saveBookmark(CustomUserDetails userDetails, BookmarkInfo bookmarkInfo) {
+    public void saveBookmark(CustomUserDetails userDetails, DealInfo bookmarkInfo) {
         if (userDetails == null) {
             throw new IllegalArgumentException("인증 정보가 유효하지 않습니다.");
         }
@@ -42,13 +44,18 @@ public class BookmarkService {
             throw new EntityNotFoundException("사용자 정보를 찾을 수 없습니다.");
         }
 
+        Deal deal = dealRepository
+                .findByAptNameAndDealTypeAndRegionCodeAndJibunAndDealAmountAndDealYearAndDealMonthAndDealDayAndFloor(
+                        bookmarkInfo.getAptName(), bookmarkInfo.getDealType(), bookmarkInfo.getRegionCode(), bookmarkInfo.getJibun(),
+                        bookmarkInfo.getDealAmount(), bookmarkInfo.getDealYear(), bookmarkInfo.getDealMonth(), bookmarkInfo.getDealDay(), bookmarkInfo.getFloor()
+                ).orElseGet(() -> dealRepository.save(bookmarkInfo.toEntity()));
+
+
+
+        // 3. 즐겨찾기 저장
         Bookmark bookmark = new Bookmark();
         bookmark.setUser(user);
-        bookmark.setAptNm(bookmarkInfo.getAptNm());
-        bookmark.setEstateAgentAggNm(bookmarkInfo.getEstateAgentAggNm());
-        bookmark.setDealAmount(bookmarkInfo.getDealAmount());
-        bookmark.setUmdNm(bookmarkInfo.getUmdNm());
-
+        bookmark.setDeal(deal);
         bookmarkRepository.save(bookmark);
     }
 

@@ -1,5 +1,6 @@
 package com.ssafyhome.bookmark.dto;
 
+import com.ssafyhome.deal.dto.Deal;
 import com.ssafyhome.user.dto.User;
 import jakarta.persistence.*;
 import lombok.Data;
@@ -19,14 +20,11 @@ public class Bookmark {
     @JoinColumn(name="mno")
     private User user;
 
-    private String aptNm;
+    @ManyToOne
+    @JoinColumn(name="dealId")
+    private Deal deal;
 
-    private String estateAgentAggNm;
-
-    private String umdNm;
-
-    private int dealAmount;
 
     @CreationTimestamp
-    private Date createdAt;
+    private Date reg_date;
 }

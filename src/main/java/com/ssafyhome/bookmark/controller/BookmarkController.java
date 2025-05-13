@@ -1,7 +1,7 @@
 package com.ssafyhome.bookmark.controller;
 
 import com.ssafyhome.bookmark.dto.Bookmark;
-import com.ssafyhome.bookmark.dto.BookmarkInfo;
+import com.ssafyhome.deal.dto.DealInfo;
 import com.ssafyhome.bookmark.service.BookmarkService;
 import com.ssafyhome.security.dto.CustomUserDetails;
 import jakarta.persistence.EntityNotFoundException;
@@ -19,7 +19,7 @@ import java.util.List;
 public class BookmarkController {
     private final BookmarkService bookmarkService;
 
-    @GetMapping
+    @GetMapping("/bookmark")
     public ResponseEntity<?> getBookmarks(@AuthenticationPrincipal CustomUserDetails userDetails) {
         try {
             List<Bookmark> bookmarks = bookmarkService.getBookmark(userDetails);
@@ -35,7 +35,7 @@ public class BookmarkController {
     }
 
     @PostMapping("/bookmark")
-    public ResponseEntity<?> saveBookmark(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestBody BookmarkInfo bookmarkInfo) {
+    public ResponseEntity<?> saveBookmark(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestBody DealInfo bookmarkInfo) {
         try {
             bookmarkService.saveBookmark(userDetails, bookmarkInfo);
             return ResponseEntity.ok("북마크가 저장되었습니다.");
