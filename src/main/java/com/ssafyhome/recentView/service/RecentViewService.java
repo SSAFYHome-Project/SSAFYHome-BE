@@ -1,4 +1,4 @@
-package com.ssafyhome.recentSearch.service;
+package com.ssafyhome.recentView.service;
 
 import com.ssafyhome.deal.dto.DealInfo;
 import com.ssafyhome.security.dto.CustomUserDetails;
