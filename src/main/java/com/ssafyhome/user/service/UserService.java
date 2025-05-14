@@ -1,7 +1,12 @@
 package com.ssafyhome.user.service;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
+import com.ssafyhome.user.dao.AddressRepository;
+import com.ssafyhome.user.dto.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -10,10 +15,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.ssafyhome.security.dto.CustomUserDetails;
 import com.ssafyhome.user.dao.UserRepository;
-import com.ssafyhome.user.dto.UserPatchRequest;
-import com.ssafyhome.user.dto.UserRegisterRequest;
-import com.ssafyhome.user.dto.User;
-import com.ssafyhome.user.dto.UserInfo;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +24,7 @@ import lombok.RequiredArgsConstructor;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final AddressRepository addressRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Transactional
@@ -41,13 +43,29 @@ public class UserService {
         if (profileFile != null && !profileFile.isEmpty()) {
             try {
                 byte[] profileBytes = profileFile.getBytes();
-                user.setProfile(profileBytes);   // User 엔티티에 byte[] 또는 Blob setter 가 필요
+                user.setProfile(profileBytes);
             } catch (IOException e) {
                 throw new RuntimeException("프로필 이미지 저장 중 오류가 발생했습니다.", e);
             }
         }
 
         userRepository.save(user);
+
+        if (request.getAddresses() != null) {
+            for (AddressDto addrReq : request.getAddresses()) {
+                Address address = new Address();
+                address.setUser(user);
+                address.setTitle(addrReq.getTitle());
+                address.setAddress(addrReq.getAddress());
+                address.setDetailAddress(addrReq.getDetailAddress());
+                address.setX(addrReq.getX());
+                address.setY(addrReq.getY());
+
+                addressRepository.save(address);
+            }
+        }
+
+
     }
 
     @Transactional(readOnly = true)
@@ -66,12 +84,24 @@ public class UserService {
             throw new EntityNotFoundException("사용자 정보를 찾을 수 없습니다.");
         }
 
-        // User 엔티티 정보를 UserInfo DTO로 변환
+        List<AddressDto> addressDtos = addressRepository.findByUser(user).stream()
+                .map(addr -> {
+                    AddressDto dto = new AddressDto();
+                    dto.setTitle(addr.getTitle());
+                    dto.setAddress(addr.getAddress());
+                    dto.setDetailAddress(addr.getDetailAddress());
+                    dto.setX(addr.getX());
+                    dto.setY(addr.getY());
+                    return dto;
+                })
+                .collect(Collectors.toList());
+
         return new UserInfo(
                 user.getName(),
                 user.getEmail(),
                 user.getPassword(),
                 user.getRole(),
+                addressDtos,
                 user.getProfile()
         );
     }
@@ -100,14 +130,12 @@ public class UserService {
             user.setName(request.getName());
         }
 
-
         MultipartFile profileFile = request.getProfile();
         if (profileFile != null && !profileFile.isEmpty()) {
             try {
                 byte[] profileBytes = profileFile.getBytes();
                 user.setProfile(profileBytes);
             } catch (IOException e) {
-                // log.error("프로필 업데이트 중 파일 처리 오류", e); // 로그 남기기
                 throw new RuntimeException("프로필 이미지 처리 중 오류가 발생했습니다.", e);
             }
         }
@@ -115,8 +143,51 @@ public class UserService {
         if (StringUtils.hasText(request.getPassword())) {
             user.setPassword(passwordEncoder.encode(request.getPassword()));
         }
+
+        List<AddressDto> addressDtos = request.getAddresses();
+        if (addressDtos != null && !addressDtos.isEmpty()) {
+
+            // 기존 주소를 Map<TitleType, Address>으로 변환
+            Map<TitleType, Address> addressMap = addressRepository.findByUser(user).stream()
+                    .collect(Collectors.toMap(Address::getTitle, a -> a));
+
+            for (AddressDto addrReq : addressDtos) {
+                TitleType title = addrReq.getTitle();
+                Address existing = addressMap.get(title);
+
+                boolean isAllEmpty = !StringUtils.hasText(addrReq.getAddress()) &&
+                        !StringUtils.hasText(addrReq.getDetailAddress()) &&
+                        !StringUtils.hasText(addrReq.getX()) &&
+                        !StringUtils.hasText(addrReq.getY());
+
+                if (isAllEmpty) {
+                    // 모든 필드가 비어있으면 → 해당 title 주소 삭제
+                    if (existing != null) {
+                        addressRepository.delete(existing);
+                    }
+                    continue;
+                }
+
+                if (existing != null) {
+                    // 수정
+                    existing.setAddress(addrReq.getAddress());
+                    existing.setDetailAddress(addrReq.getDetailAddress());
+                    existing.setX(addrReq.getX());
+                    existing.setY(addrReq.getY());
+                    addressRepository.save(existing);
+                } else {
+                    // 새로 추가
+                    Address newAddr = new Address();
+                    newAddr.setUser(user);
+                    newAddr.setTitle(title);
+                    newAddr.setAddress(addrReq.getAddress());
+                    newAddr.setDetailAddress(addrReq.getDetailAddress());
+                    newAddr.setX(addrReq.getX());
+                    newAddr.setY(addrReq.getY());
+                    addressRepository.save(newAddr);
+                }
+            }
+        }
     }
-
-
 
 }
