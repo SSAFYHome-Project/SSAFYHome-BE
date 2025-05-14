@@ -1,7 +1,7 @@
-package com.ssafyhome.recentSearch.controller;
+package com.ssafyhome.recentView.controller;
 
 import com.ssafyhome.deal.dto.DealInfo;
-import com.ssafyhome.recentSearch.service.RecentViewService;
+import com.ssafyhome.recentView.service.RecentViewService;
 import com.ssafyhome.security.dto.CustomUserDetails;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;

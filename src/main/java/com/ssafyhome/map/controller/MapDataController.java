@@ -3,10 +3,6 @@ package com.ssafyhome.map.controller;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.ssafyhome.deal.dto.DealInfo;
-import com.ssafyhome.recentSearch.service.RecentViewService;
-import com.ssafyhome.security.dto.CustomUserDetails;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
