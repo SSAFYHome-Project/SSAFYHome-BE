@@ -28,7 +28,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         String uri = httpRequest.getRequestURI();
     	
-    	if (uri.startsWith("/api/map") || uri.startsWith("/api/login") || uri.startsWith("/api/user/register")) {
+    	if (uri.startsWith("/api/map") || uri.startsWith("/api/login") || uri.startsWith("/api/user/register") || uri.startsWith("/api/apt")) {
     		log.info("[JWT Filter] Bypassed authentication for URL: {}", uri);
             chain.doFilter(req, res); // 필터 통과
             return;
