@@ -11,5 +11,5 @@ public class SsafyHomeApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(SsafyHomeApplication.class, args);
 	}
-
+	
 }

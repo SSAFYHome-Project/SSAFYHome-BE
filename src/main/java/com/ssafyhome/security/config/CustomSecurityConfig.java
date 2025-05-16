@@ -42,7 +42,7 @@ public class CustomSecurityConfig {
             .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
         )
         .authorizeHttpRequests(authorize -> authorize
-            .requestMatchers("/api/map/**", "/api/login", "/api/user/register/**").permitAll()
+            .requestMatchers("/api/map/**", "/api/login", "/api/user/**", "/api/apt/**").permitAll()
             .anyRequest().authenticated()
         )
         .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider, redisTemplate),
