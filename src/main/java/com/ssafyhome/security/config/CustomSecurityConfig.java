@@ -47,7 +47,7 @@ public class CustomSecurityConfig {
                 .requestMatchers("/api/user/register/**").permitAll()
                 .requestMatchers("/api/apt/**").permitAll() // 아파트 정보 관련 API
                 .requestMatchers("/api/map/**").permitAll() // 지도 데이터 관련 API
-                .requestMatchers("/api/user/**").hasAnyRole("USER", "ADMIN") // 북마크 삭제
+                .requestMatchers("/api/user/**").hasAnyRole("USER", "ADMIN")
                 .requestMatchers("/api/logout").authenticated()
             .anyRequest().authenticated()
         )
