@@ -57,7 +57,7 @@ public class AuthApiController {
     public ResponseEntity<?> logout(HttpServletRequest req) {
         String token = jwtProvider.resolveToken(req);
         if (token != null) {
-            redisTemplate.opsForValue().set(token, "logout", Duration.ofHours(3));
+            redisTemplate.opsForValue().set(token, "logout", Duration.ofHours(1));
         }
         // 3) JSON 응답
         return ResponseEntity.ok(Map.of(

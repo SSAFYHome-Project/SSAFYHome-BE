@@ -3,6 +3,7 @@ package com.ssafyhome.security.config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
@@ -42,7 +43,12 @@ public class CustomSecurityConfig {
             .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
         )
         .authorizeHttpRequests(authorize -> authorize
-            .requestMatchers("/api/map/**", "/api/login", "/api/user/**", "/api/apt/**").permitAll()
+                .requestMatchers("/api/login").permitAll() // 로그인 API
+                .requestMatchers("/api/user/register/**").permitAll()
+                .requestMatchers("/api/apt/**").permitAll() // 아파트 정보 관련 API
+                .requestMatchers("/api/map/**").permitAll() // 지도 데이터 관련 API
+                .requestMatchers("/api/user/**").hasAnyRole("USER", "ADMIN") // 북마크 삭제
+                .requestMatchers("/api/logout").authenticated()
             .anyRequest().authenticated()
         )
         .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider, redisTemplate),
