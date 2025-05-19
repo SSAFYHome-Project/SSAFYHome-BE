@@ -44,7 +44,7 @@ public class CustomSecurityConfig {
         )
         .authorizeHttpRequests(authorize -> authorize
             .requestMatchers("/api/map/**", "/api/login", "/api/user/register/**", "/api/apt/**").permitAll()
-                .requestMatchers("/api/user/**", "/api/logout").authenticated()
+                .requestMatchers("/api/user/**", "/api/logout").hasAnyRole("USER", "ADMIN")
 //                .requestMatchers("/api/logout").authenticated()
             .anyRequest().authenticated()
         )

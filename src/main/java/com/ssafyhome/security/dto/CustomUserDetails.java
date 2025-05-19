@@ -23,7 +23,7 @@ public class CustomUserDetails implements UserDetails {
     public Collection<? extends GrantedAuthority> getAuthorities() {
         List<GrantedAuthority> roles = new ArrayList<>();
         if (user.getRole() != null) {
-            roles.add(new SimpleGrantedAuthority("ROLE_" + user.getRole()));
+            roles.add(new SimpleGrantedAuthority(user.getRole()));
         }
         return roles;
     }
