@@ -30,7 +30,7 @@ public class AptApiClient {
             urlBuilder.append("?serviceKey=").append(encodedKey);
             urlBuilder.append("&sigunguCode=").append(sggCd);
             urlBuilder.append("&pageNo=1");
-            urlBuilder.append("&numOfRows=9999");
+            urlBuilder.append("&numOfRows=100");
             urlBuilder.append("&resultType=json");
             System.out.println("요청 URL: " + urlBuilder);
 
