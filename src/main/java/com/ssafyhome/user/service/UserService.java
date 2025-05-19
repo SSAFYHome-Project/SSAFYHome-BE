@@ -1,6 +1,7 @@
 package com.ssafyhome.user.service;
 
 import java.io.IOException;
+import java.net.URL;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -64,7 +65,6 @@ public class UserService {
                 addressRepository.save(address);
             }
         }
-
 
     }
 

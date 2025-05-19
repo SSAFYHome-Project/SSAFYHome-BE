@@ -1,7 +1,11 @@
 package com.ssafyhome.security.config;
 
+import com.ssafyhome.security.oauth.OAuth2CustomUserService;
+import com.ssafyhome.security.oauth.OAuthFailureHandler;
+import com.ssafyhome.security.oauth.OAuthSuccessHandler;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -27,7 +31,17 @@ public class CustomSecurityConfig {
 
     private final JwtTokenProvider jwtTokenProvider;
     private final RedisTemplate<String, String> redisTemplate;
+    private final OAuth2CustomUserService oAuth2CustomUserService;
 
+    @Bean
+    public OAuthSuccessHandler oAuthSuccessHandler(){
+        return new OAuthSuccessHandler(jwtTokenProvider);
+    }
+
+    @Bean
+    public OAuthFailureHandler oAuthFailureHandler() {
+        return new OAuthFailureHandler();
+    }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -48,6 +62,12 @@ public class CustomSecurityConfig {
 //                .requestMatchers("/api/logout").authenticated()
             .anyRequest().authenticated()
         )
+                .oauth2Login(oauth2 -> oauth2
+                                .userInfoEndpoint(userInfoEndpoint -> userInfoEndpoint
+                                        .userService(oAuth2CustomUserService))
+                        .successHandler(oAuthSuccessHandler())
+                        .failureHandler(oAuthFailureHandler()) // 로그인 실패 시 경로
+                )
         .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider, redisTemplate),
             UsernamePasswordAuthenticationFilter.class);
 
