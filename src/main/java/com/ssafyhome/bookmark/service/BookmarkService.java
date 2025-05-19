@@ -50,8 +50,6 @@ public class BookmarkService {
                         bookmarkInfo.getDealAmount(), bookmarkInfo.getDealYear(), bookmarkInfo.getDealMonth(), bookmarkInfo.getDealDay(), bookmarkInfo.getFloor()
                 ).orElseGet(() -> dealRepository.save(bookmarkInfo.toEntity()));
 
-
-
         // 3. 즐겨찾기 저장
         Bookmark bookmark = new Bookmark();
         bookmark.setUser(user);

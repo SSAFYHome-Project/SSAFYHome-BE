@@ -2,12 +2,9 @@ package com.ssafyhome.security.oauth;
 
 import com.ssafyhome.user.dao.UserRepository;
 import com.ssafyhome.user.dto.User;
-import com.ssafyhome.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
@@ -65,7 +62,6 @@ public class OAuth2CustomUserService extends DefaultOAuth2UserService {
 
         User user = userRepository.findByEmail(email);
 
-        // Spring Security의 OAuth2 인증 객체 반환 (필요 시 AuthDetails로 대체 가능)
         return new DefaultOAuth2User(
                 Collections.singleton(new SimpleGrantedAuthority(user.getRole())),
                 attributes,
