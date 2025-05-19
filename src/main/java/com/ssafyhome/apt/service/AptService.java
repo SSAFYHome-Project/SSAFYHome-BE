@@ -41,12 +41,9 @@ public class AptService {
             StringBuilder urlBuilder = new StringBuilder("https://apis.data.go.kr/1613000/AptBasisInfoServiceV3/getAphusBassInfoV3");
             urlBuilder.append("?serviceKey=").append(encodedKey);
             urlBuilder.append("&kaptCode=").append(aptCode);
-            urlBuilder.append("&pageNo=1");
-            urlBuilder.append("&numOfRows=100");
-            urlBuilder.append("&resultType=json");
+            urlBuilder.append("&pageNo=1&numOfRows=100&resultType=json");
 
-            URL url = new URL(urlBuilder.toString());
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            HttpURLConnection conn = (HttpURLConnection) new URL(urlBuilder.toString()).openConnection();
             conn.setRequestMethod("GET");
             conn.setRequestProperty("Accept", "application/json");
             conn.setRequestProperty("User-Agent", "Mozilla/5.0");
@@ -58,8 +55,7 @@ public class AptService {
             StringBuilder response = new StringBuilder();
             String line;
             while ((line = rd.readLine()) != null) response.append(line);
-            rd.close();
-            conn.disconnect();
+            rd.close(); conn.disconnect();
 
             JsonNode root = new ObjectMapper().readTree(response.toString());
             aptInfo = root.path("response").path("body").path("item");
@@ -79,29 +75,29 @@ public class AptService {
             int endMonth = (year == 2025) ? 5 : 12;
             for (int month = 1; month <= endMonth; month++) {
                 String yyyymm = String.format("%04d%02d", year, month);
-                int periodStartMonth = ((month - 1) / 3) * 3 + 1;
-                String periodKey = String.format("%04d-%02d", year, periodStartMonth);
+                String periodKey = String.format("%04d-%02d", year, ((month - 1) / 3) * 3 + 1);
 
                 history.addAll(fetchDeals("Trade", lawdCd, yyyymm, targetAptName, jibun, tradeChartMap, periodKey));
                 history.addAll(fetchDeals("Rent", lawdCd, yyyymm, targetAptName, jibun, rentChartMap, periodKey));
             }
         }
 
+        history.sort((a, b) -> parseYearMonth(b.getDate()) - parseYearMonth(a.getDate()));
+
         List<ChartItem> tradeChart = buildChartData(tradeChartMap);
         List<ChartItem> rentChart = buildChartData(rentChartMap);
 
-        history.sort((a, b) -> b.getDate().compareTo(a.getDate()));
-        String recentDate = history.isEmpty() ? "-" : history.get(0).getDate();
+        HistoryItem recentTrade = history.stream().filter(h -> h.getType().equals("매매"))
+                .max(Comparator.comparing(HistoryItem::getDate)).orElse(null);
+        HistoryItem recentRent = history.stream().filter(h -> h.getType().equals("전월세"))
+                .max(Comparator.comparing(HistoryItem::getDate)).orElse(null);
 
-        HistoryItem lowestTrade = history.stream()
-                .filter(h -> h.getType().equals("매매"))
-                .min(Comparator.comparingInt(h -> parsePrice(h.getPrice())))
-                .orElse(null);
+        HistoryItem lowestTrade = history.stream().filter(h -> h.getType().equals("매매"))
+                .min(Comparator.comparingInt(h -> parsePrice(h.getPrice()))).orElse(null);
 
         HistoryItem lowestRent = history.stream()
-                .filter(h -> h.getType().equals("전월세"))
-                .min(Comparator.comparingInt(h -> parsePrice(h.getPrice())))
-                .orElse(null);
+                .filter(h -> h.getType().equals("전월세") && h.getPrice().contains("(전세)"))
+                .min(Comparator.comparingInt(h -> parsePrice(h.getPrice()))).orElse(null);
 
         return AptDetailResponse.builder()
                 .aptName(aptInfo.path("kaptName").asText())
@@ -112,10 +108,15 @@ public class AptService {
                 .kaptDongCnt(aptInfo.path("kaptDongCnt").asText())
                 .kaptTopFloor(aptInfo.path("kaptTopFloor").asInt())
                 .kaptUsedate(aptInfo.path("kaptUsedate").asText())
-                .recentDate(recentDate)
-                .lowestDate(lowestTrade != null ? lowestTrade.getDate() : "-")
-                .lowestPrice(lowestTrade != null ? lowestTrade.getPrice() : "-")
-                .lowestFloor(lowestTrade != null ? lowestTrade.getFloor() : "-")
+                .recentTradeDate(recentTrade != null ? recentTrade.getDate() : "-")
+                .recentTradePrice(recentTrade != null ? recentTrade.getPrice() : "-")
+                .recentTradeFloor(recentTrade != null ? recentTrade.getFloor() : "-")
+                .recentRentDate(recentRent != null ? recentRent.getDate() : "-")
+                .recentRentPrice(recentRent != null ? recentRent.getPrice() : "-")
+                .recentRentFloor(recentRent != null ? recentRent.getFloor() : "-")
+                .lowestTradeDate(lowestTrade != null ? lowestTrade.getDate() : "-")
+                .lowestTradePrice(lowestTrade != null ? lowestTrade.getPrice() : "-")
+                .lowestTradeFloor(lowestTrade != null ? lowestTrade.getFloor() : "-")
                 .lowestRentDate(lowestRent != null ? lowestRent.getDate() : "-")
                 .lowestRentPrice(lowestRent != null ? lowestRent.getPrice() : "-")
                 .lowestRentFloor(lowestRent != null ? lowestRent.getFloor() : "-")
@@ -140,21 +141,16 @@ public class AptService {
     private List<HistoryItem> fetchDeals(String type, String lawdCd, String yyyymm, String aptName, String jibun, Map<String, List<Integer>> priceMap, String key) {
         List<HistoryItem> results = new ArrayList<>();
         try {
-            String endpoint = type.equals("Trade") ?
-                    "RTMSDataSvcAptTrade/getRTMSDataSvcAptTrade" :
-                    "RTMSDataSvcAptRent/getRTMSDataSvcAptRent";
-            String BASE_URL = "https://apis.data.go.kr/1613000";
+            String endpoint = type.equals("Trade") ? "RTMSDataSvcAptTrade/getRTMSDataSvcAptTrade" : "RTMSDataSvcAptRent/getRTMSDataSvcAptRent";
             String encodedKey = URLEncoder.encode(serviceKey, StandardCharsets.UTF_8);
 
-            StringBuilder urlBuilder = new StringBuilder(BASE_URL + "/" + endpoint);
+            StringBuilder urlBuilder = new StringBuilder("https://apis.data.go.kr/1613000/" + endpoint);
             urlBuilder.append("?LAWD_CD=").append(lawdCd);
             urlBuilder.append("&DEAL_YMD=").append(yyyymm);
             urlBuilder.append("&serviceKey=").append(encodedKey);
-            urlBuilder.append("&_type=json");
-            urlBuilder.append("&numOfRows=100");
+            urlBuilder.append("&_type=json&numOfRows=100");
 
-            URL url = new URL(urlBuilder.toString());
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            HttpURLConnection conn = (HttpURLConnection) new URL(urlBuilder.toString()).openConnection();
             conn.setRequestMethod("GET");
             conn.setRequestProperty("User-Agent", "Mozilla/5.0");
 
@@ -165,8 +161,7 @@ public class AptService {
             StringBuilder response = new StringBuilder();
             String line;
             while ((line = rd.readLine()) != null) response.append(line);
-            rd.close();
-            conn.disconnect();
+            rd.close(); conn.disconnect();
 
             JsonNode items = new ObjectMapper().readTree(response.toString())
                     .path("response").path("body").path("items").path("item");
@@ -179,7 +174,7 @@ public class AptService {
                 String strippedTarget = aptName.replaceAll("\\s+", "");
 
                 boolean nameMatch = strippedName.contains(strippedTarget) || strippedTarget.contains(strippedName);
-                boolean jibunMatch = aptJibun.equals(jibun);
+                boolean jibunMatch = aptJibun.contains(jibun) || jibun.contains(aptJibun);
 
                 if (!(nameMatch && jibunMatch)) continue;
 
@@ -195,14 +190,20 @@ public class AptService {
                 if (type.equals("Trade")) {
                     int amount = Integer.parseInt(rawPrice);
                     price = formatTradePrice(amount);
-                    if (priceMap != null && key != null) {
-                        priceMap.computeIfAbsent(key, k -> new ArrayList<>()).add(amount);
-                    }
+                    priceMap.computeIfAbsent(key, k -> new ArrayList<>()).add(amount);
                 } else {
-                    String[] parts = rawPrice.split("/");
-                    int deposit = Integer.parseInt(parts[0]);
-                    int rent = Integer.parseInt(parts[1]);
+                    int deposit = 0, rent = 0;
+                    try {
+                        String[] parts = rawPrice.split("/");
+                        deposit = Integer.parseInt(parts[0].trim());
+                        rent = parts.length > 1 ? Integer.parseInt(parts[1].trim()) : 0;
+                    } catch (Exception e) {
+                        System.err.println("전월세 가격 파싱 실패: " + rawPrice);
+                    }
                     price = formatRentPrice(deposit, rent);
+                    if (rent == 0 && deposit > 0) {
+                        priceMap.computeIfAbsent(key, k -> new ArrayList<>()).add(deposit);
+                    }
                 }
 
                 results.add(HistoryItem.builder()
@@ -220,6 +221,17 @@ public class AptService {
         return results;
     }
 
+    private int parseYearMonth(String date) {
+        try {
+            String[] parts = date.split("\\.");
+            int year = Integer.parseInt(parts[0]);
+            int month = Integer.parseInt(parts[1]);
+            return year * 100 + month;
+        } catch (Exception e) {
+            return 0;
+        }
+    }
+
     private int parsePrice(String price) {
         try {
             return Integer.parseInt(price.replaceAll("[^0-9]", ""));
@@ -232,15 +244,10 @@ public class AptService {
         if (amount == 0) return "-";
         int eok = amount / 10000;
         int man = amount % 10000;
-        if (eok == 0) return man + "만원";
-        return man == 0 ? eok + "억" : eok + "억 " + man + "만원";
+        return eok == 0 ? man + "만원" : (man == 0 ? eok + "억" : eok + "억 " + man + "만원");
     }
 
     private String formatRentPrice(int deposit, int rent) {
-        if (rent == 0) {
-            return formatTradePrice(deposit) + " (전세)";
-        } else {
-            return formatTradePrice(deposit) + " / " + rent + "만원 (월세)";
-        }
+        return rent == 0 ? formatTradePrice(deposit) + " (전세)" : formatTradePrice(deposit) + " / " + rent + "만원 (월세)";
     }
 }

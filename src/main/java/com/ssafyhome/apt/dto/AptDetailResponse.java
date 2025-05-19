@@ -19,22 +19,31 @@ public class AptDetailResponse {
     private int kaptTopFloor;
     private String kaptUsedate;
 
-    private String recentDate;
+    // 매매 최근 실거래 정보
+    private String recentTradeDate;
+    private String recentTradePrice;
+    private String recentTradeFloor;
+
+    // 전월세 최근 실거래 정보
+    private String recentRentDate;
+    private String recentRentPrice;
+    private String recentRentFloor;
 
     // 매매 최저가 정보
-    private String lowestDate;
-    private String lowestPrice;
-    private String lowestFloor;
+    private String lowestTradeDate;
+    private String lowestTradePrice;
+    private String lowestTradeFloor;
 
-    // 전월세 최저가 정보
+    // 전세 기준 최저가 정보 (월세는 제외)
     private String lowestRentDate;
     private String lowestRentPrice;
     private String lowestRentFloor;
 
     // 차트 데이터
     private List<ChartItem> chartData;       // 매매
-    private List<ChartItem> rentChartData;   // 전월세
+    private List<ChartItem> rentChartData;   // 전월세 (전세만 기준)
 
+    // 전체 이력 데이터 (매매 + 전월세)
     private List<HistoryItem> history;
 
     @Data
