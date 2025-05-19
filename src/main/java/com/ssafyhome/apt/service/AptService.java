@@ -42,7 +42,7 @@ public class AptService {
             urlBuilder.append("?serviceKey=").append(encodedKey);
             urlBuilder.append("&kaptCode=").append(aptCode);
             urlBuilder.append("&pageNo=1");
-            urlBuilder.append("&numOfRows=9999");
+            urlBuilder.append("&numOfRows=100");
             urlBuilder.append("&resultType=json");
 
             URL url = new URL(urlBuilder.toString());
@@ -69,26 +69,30 @@ public class AptService {
         }
 
         List<HistoryItem> history = new ArrayList<>();
-        Map<String, List<Integer>> yearlyPriceMap = new TreeMap<>();
+        Map<String, List<Integer>> quarterlyPriceMap = new TreeMap<>();
 
         String targetAptName = aptInfo.path("kaptName").asText();
         String lawdCd = sggCd.substring(0, 5);
 
-        for (int year = 2021; year <= 2025; year++) {
-            for (int month = 1; month <= 12; month++) {
+        for (int year = 2023; year <= 2025; year++) {
+            int endMonth = (year == 2025) ? 5 : 12;
+            for (int month = 1; month <= endMonth; month++) {
                 String yyyymm = String.format("%04d%02d", year, month);
-                history.addAll(fetchDeals("Trade", lawdCd, yyyymm, targetAptName, jibun, yearlyPriceMap));
-                history.addAll(fetchDeals("Rent", lawdCd, yyyymm, targetAptName, jibun, null)); // chartData는 매매만
+
+                int periodStartMonth = ((month - 1) / 3) * 3 + 1;
+                String periodKey = String.format("%04d-%02d", year, periodStartMonth);
+
+                history.addAll(fetchDeals("Trade", lawdCd, yyyymm, targetAptName, jibun, quarterlyPriceMap, periodKey));
+                history.addAll(fetchDeals("Rent", lawdCd, yyyymm, targetAptName, jibun, null, null));
             }
         }
 
-        // chartData 생성 (년도별 평균 가격)
         List<ChartItem> chart = new ArrayList<>();
-        for (Map.Entry<String, List<Integer>> entry : yearlyPriceMap.entrySet()) {
+        for (Map.Entry<String, List<Integer>> entry : quarterlyPriceMap.entrySet()) {
             double avg = entry.getValue().stream().mapToInt(i -> i).average().orElse(0);
             chart.add(ChartItem.builder()
                     .date(entry.getKey())
-                    .price(Math.round(avg / 10000.0 * 10.0) / 10.0) // 억 단위, 소수점 1자리
+                    .price(Math.round(avg / 10000.0 * 10.0) / 10.0)
                     .build());
         }
 
@@ -118,7 +122,7 @@ public class AptService {
                 .build();
     }
 
-    private List<HistoryItem> fetchDeals(String type, String lawdCd, String yyyymm, String aptName, String jibun, Map<String, List<Integer>> yearlyPriceMap) {
+    private List<HistoryItem> fetchDeals(String type, String lawdCd, String yyyymm, String aptName, String jibun, Map<String, List<Integer>> priceMap, String key) {
         List<HistoryItem> results = new ArrayList<>();
         try {
             String endpoint = type.equals("Trade") ?
@@ -132,7 +136,7 @@ public class AptService {
             urlBuilder.append("&DEAL_YMD=").append(yyyymm);
             urlBuilder.append("&serviceKey=").append(encodedKey);
             urlBuilder.append("&_type=json");
-            urlBuilder.append("&numOfRows=9999");
+            urlBuilder.append("&numOfRows=100");
             System.out.println("요청 URL: " + urlBuilder);
             System.out.println("찾을 아파트: " + aptName);
 
@@ -155,20 +159,16 @@ public class AptService {
                     .path("response").path("body").path("items").path("item");
 
             for (JsonNode item : items) {
-            	String name = item.path("aptNm").asText();
-            	String aptJibun = item.path("jibun").asText();
+                String name = item.path("aptNm").asText();
+                String aptJibun = item.path("jibun").asText();
 
-            	String strippedName = name.replaceAll("\\s+", "");
-            	String strippedTarget = aptName.replaceAll("\\s+", "");
+                String strippedName = name.replaceAll("\\s+", "");
+                String strippedTarget = aptName.replaceAll("\\s+", "");
 
-            	boolean nameMatch = strippedName.contains(strippedTarget) || strippedTarget.contains(strippedName);
-            	boolean jibunMatch = aptJibun.equals(jibun);
+                boolean nameMatch = strippedName.contains(strippedTarget) || strippedTarget.contains(strippedName);
+                boolean jibunMatch = aptJibun.equals(jibun);
 
-            	if (!(nameMatch && jibunMatch)) continue;
-
-            	System.out.println("매칭된 아파트명: " + name + " / 요청 아파트명: " + aptName);
-            	System.out.println("매칭된 아파트 지번: " + aptJibun + " / 요청 아파트 지번: " + jibun);
-
+                if (!(nameMatch && jibunMatch)) continue;
 
                 String date = item.path("dealYear").asText() + "." + String.format("%02d", item.path("dealMonth").asInt());
                 String floor = item.path("floor").asText() + "층";
@@ -178,15 +178,18 @@ public class AptService {
                         ? item.path("dealAmount").asText().replaceAll(",", "").trim()
                         : item.path("deposit").asText().replaceAll(",", "") + "/" + item.path("monthlyRent").asText().replaceAll(",", "");
 
-                String price = type.equals("Trade") ? formatToWon(rawPrice) : rawPrice;
-
-                if (type.equals("Trade") && yearlyPriceMap != null) {
-                    String year = date.substring(0, 4);
-                    try {
-                        yearlyPriceMap.computeIfAbsent(year, k -> new ArrayList<>()).add(Integer.parseInt(rawPrice));
-                    } catch (NumberFormatException e) {
-                        System.err.println("⚠️ 차트 가격 파싱 실패: " + rawPrice);
+                String price;
+                if (type.equals("Trade")) {
+                    int amount = Integer.parseInt(rawPrice);
+                    price = formatTradePrice(amount);
+                    if (priceMap != null && key != null) {
+                        priceMap.computeIfAbsent(key, k -> new ArrayList<>()).add(amount);
                     }
+                } else {
+                    String[] parts = rawPrice.split("/");
+                    int deposit = Integer.parseInt(parts[0]);
+                    int rent = Integer.parseInt(parts[1]);
+                    price = formatRentPrice(deposit, rent);
                 }
 
                 results.add(HistoryItem.builder()
@@ -199,7 +202,7 @@ public class AptService {
             }
 
         } catch (Exception e) {
-            System.err.println("❌ 거래 정보 조회 실패: " + e.getMessage());
+            System.err.println("거래 정보 조회 실패: " + e.getMessage());
         }
         return results;
     }
@@ -212,14 +215,19 @@ public class AptService {
         }
     }
 
-    private String formatToWon(String amountStr) {
-        try {
-            int amount = Integer.parseInt(amountStr);
-            int eok = amount / 10000;
-            int man = amount % 10000;
-            return man == 0 ? eok + "억" : eok + "억 " + man + "만원";
-        } catch (Exception e) {
-            return amountStr + "만원";
+    private String formatTradePrice(int amount) {
+        if (amount == 0) return "-";
+        int eok = amount / 10000;
+        int man = amount % 10000;
+        if (eok == 0) return man + "만원";
+        return man == 0 ? eok + "억" : eok + "억 " + man + "만원";
+    }
+
+    private String formatRentPrice(int deposit, int rent) {
+        if (rent == 0) {
+            return formatTradePrice(deposit) + " (전세)";
+        } else {
+            return formatTradePrice(deposit) + " / " + rent + "만원 (월세)";
         }
     }
 }
