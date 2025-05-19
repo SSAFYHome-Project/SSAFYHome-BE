@@ -8,7 +8,7 @@ import lombok.Setter;
 @Setter
 public class SummaryDto {
     private String sido;
-    private String gigun;
+    private String sigun;
     private String umd;
 }
 
