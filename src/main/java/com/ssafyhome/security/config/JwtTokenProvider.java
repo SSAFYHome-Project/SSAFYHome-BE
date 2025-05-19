@@ -2,6 +2,7 @@ package com.ssafyhome.security.config;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -14,6 +15,7 @@ import javax.crypto.SecretKey;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Component;
 
+import java.util.Base64;
 import java.util.Date;
 
 @Component
@@ -26,13 +28,21 @@ public class JwtTokenProvider {
     @Value("${jwt.token-validity-in-milliseconds}")
     private long tokenValidityInMilliseconds;
 
+    private SecretKey secretKey;
+
     private final UserDetailsService userDetailsService;
+
+    @PostConstruct
+    protected void init() {
+        byte[] keyBytes = Base64.getDecoder().decode(jwtSecretString);
+        this.secretKey = Keys.hmacShaKeyFor(keyBytes);
+    }
 
     // 토큰 생성
     public String generateToken(Authentication auth) {
         String username = auth.getName();
         Date now = new Date();
-        Date expiry = new Date(now.getTime() + validityInMilliseconds);
+        Date expiry = new Date(now.getTime() + tokenValidityInMilliseconds);
 
         return Jwts.builder()
                 .setSubject(username)
