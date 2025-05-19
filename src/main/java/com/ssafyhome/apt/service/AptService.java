@@ -68,39 +68,38 @@ public class AptService {
             throw new RuntimeException("아파트 기본 정보 조회 실패: " + e.getMessage());
         }
 
-        List<HistoryItem> history = new ArrayList<>();
-        Map<String, List<Integer>> quarterlyPriceMap = new TreeMap<>();
-
         String targetAptName = aptInfo.path("kaptName").asText();
         String lawdCd = sggCd.substring(0, 5);
+
+        List<HistoryItem> history = new ArrayList<>();
+        Map<String, List<Integer>> tradeChartMap = new TreeMap<>();
+        Map<String, List<Integer>> rentChartMap = new TreeMap<>();
 
         for (int year = 2023; year <= 2025; year++) {
             int endMonth = (year == 2025) ? 5 : 12;
             for (int month = 1; month <= endMonth; month++) {
                 String yyyymm = String.format("%04d%02d", year, month);
-
                 int periodStartMonth = ((month - 1) / 3) * 3 + 1;
                 String periodKey = String.format("%04d-%02d", year, periodStartMonth);
 
-                history.addAll(fetchDeals("Trade", lawdCd, yyyymm, targetAptName, jibun, quarterlyPriceMap, periodKey));
-                history.addAll(fetchDeals("Rent", lawdCd, yyyymm, targetAptName, jibun, null, null));
+                history.addAll(fetchDeals("Trade", lawdCd, yyyymm, targetAptName, jibun, tradeChartMap, periodKey));
+                history.addAll(fetchDeals("Rent", lawdCd, yyyymm, targetAptName, jibun, rentChartMap, periodKey));
             }
         }
 
-        List<ChartItem> chart = new ArrayList<>();
-        for (Map.Entry<String, List<Integer>> entry : quarterlyPriceMap.entrySet()) {
-            double avg = entry.getValue().stream().mapToInt(i -> i).average().orElse(0);
-            chart.add(ChartItem.builder()
-                    .date(entry.getKey())
-                    .price(Math.round(avg / 10000.0 * 10.0) / 10.0)
-                    .build());
-        }
+        List<ChartItem> tradeChart = buildChartData(tradeChartMap);
+        List<ChartItem> rentChart = buildChartData(rentChartMap);
 
         history.sort((a, b) -> b.getDate().compareTo(a.getDate()));
         String recentDate = history.isEmpty() ? "-" : history.get(0).getDate();
 
-        HistoryItem lowest = history.stream()
+        HistoryItem lowestTrade = history.stream()
                 .filter(h -> h.getType().equals("매매"))
+                .min(Comparator.comparingInt(h -> parsePrice(h.getPrice())))
+                .orElse(null);
+
+        HistoryItem lowestRent = history.stream()
+                .filter(h -> h.getType().equals("전월세"))
                 .min(Comparator.comparingInt(h -> parsePrice(h.getPrice())))
                 .orElse(null);
 
@@ -114,12 +113,28 @@ public class AptService {
                 .kaptTopFloor(aptInfo.path("kaptTopFloor").asInt())
                 .kaptUsedate(aptInfo.path("kaptUsedate").asText())
                 .recentDate(recentDate)
-                .lowestDate(lowest != null ? lowest.getDate() : "-")
-                .lowestPrice(lowest != null ? lowest.getPrice() : "-")
-                .lowestFloor(lowest != null ? lowest.getFloor() : "-")
-                .chartData(chart)
+                .lowestDate(lowestTrade != null ? lowestTrade.getDate() : "-")
+                .lowestPrice(lowestTrade != null ? lowestTrade.getPrice() : "-")
+                .lowestFloor(lowestTrade != null ? lowestTrade.getFloor() : "-")
+                .lowestRentDate(lowestRent != null ? lowestRent.getDate() : "-")
+                .lowestRentPrice(lowestRent != null ? lowestRent.getPrice() : "-")
+                .lowestRentFloor(lowestRent != null ? lowestRent.getFloor() : "-")
+                .chartData(tradeChart)
+                .rentChartData(rentChart)
                 .history(history)
                 .build();
+    }
+
+    private List<ChartItem> buildChartData(Map<String, List<Integer>> map) {
+        List<ChartItem> chart = new ArrayList<>();
+        for (Map.Entry<String, List<Integer>> entry : map.entrySet()) {
+            double avg = entry.getValue().stream().mapToInt(i -> i).average().orElse(0);
+            chart.add(ChartItem.builder()
+                    .date(entry.getKey())
+                    .price(Math.round(avg / 10000.0 * 10.0) / 10.0)
+                    .build());
+        }
+        return chart;
     }
 
     private List<HistoryItem> fetchDeals(String type, String lawdCd, String yyyymm, String aptName, String jibun, Map<String, List<Integer>> priceMap, String key) {
@@ -137,8 +152,6 @@ public class AptService {
             urlBuilder.append("&serviceKey=").append(encodedKey);
             urlBuilder.append("&_type=json");
             urlBuilder.append("&numOfRows=100");
-            System.out.println("요청 URL: " + urlBuilder);
-            System.out.println("찾을 아파트: " + aptName);
 
             URL url = new URL(urlBuilder.toString());
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();

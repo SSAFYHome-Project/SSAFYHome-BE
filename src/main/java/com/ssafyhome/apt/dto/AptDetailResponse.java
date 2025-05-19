@@ -20,10 +20,21 @@ public class AptDetailResponse {
     private String kaptUsedate;
 
     private String recentDate;
+
+    // 매매 최저가 정보
     private String lowestDate;
     private String lowestPrice;
     private String lowestFloor;
-    private List<ChartItem> chartData;
+
+    // 전월세 최저가 정보
+    private String lowestRentDate;
+    private String lowestRentPrice;
+    private String lowestRentFloor;
+
+    // 차트 데이터
+    private List<ChartItem> chartData;       // 매매
+    private List<ChartItem> rentChartData;   // 전월세
+
     private List<HistoryItem> history;
 
     @Data
