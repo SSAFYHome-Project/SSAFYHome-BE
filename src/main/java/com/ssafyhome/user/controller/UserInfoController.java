@@ -33,7 +33,6 @@ public class UserInfoController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("인증 정보가 없습니다.");
         }
         UserInfo userInfo = userService.getUserInfoFromDetails(userDetails);
-
         return ResponseEntity.ok(userInfo);
 
     }

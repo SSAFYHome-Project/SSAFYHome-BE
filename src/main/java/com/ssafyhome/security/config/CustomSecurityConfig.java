@@ -43,13 +43,9 @@ public class CustomSecurityConfig {
             .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
         )
         .authorizeHttpRequests(authorize -> authorize
-            .requestMatchers("/api/map/**", "/api/login", "/api/user/**").permitAll()
-                .requestMatchers("/api/login").permitAll() // 로그인 API
-                .requestMatchers("/api/user/register/**").permitAll()
-                .requestMatchers("/api/apt/**").permitAll() // 아파트 정보 관련 API
-                .requestMatchers("/api/map/**").permitAll() // 지도 데이터 관련 API
-                .requestMatchers("/api/user/**").hasAnyRole("USER", "ADMIN")
-                .requestMatchers("/api/logout").authenticated()
+            .requestMatchers("/api/map/**", "/api/login", "/api/user/register/**", "/api/apt/**").permitAll()
+                .requestMatchers("/api/user/**", "/api/logout").authenticated()
+//                .requestMatchers("/api/logout").authenticated()
             .anyRequest().authenticated()
         )
         .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider, redisTemplate),
