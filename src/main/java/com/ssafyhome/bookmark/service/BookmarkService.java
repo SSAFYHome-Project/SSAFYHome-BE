@@ -50,7 +50,11 @@ public class BookmarkService {
                         bookmarkInfo.getDealAmount(), bookmarkInfo.getDealYear(), bookmarkInfo.getDealMonth(), bookmarkInfo.getDealDay(), bookmarkInfo.getFloor()
                 ).orElseGet(() -> dealRepository.save(bookmarkInfo.toEntity()));
 
-        // 3. 즐겨찾기 저장
+        boolean exists = bookmarkRepository.findByUserAndDeal(user, deal).isPresent();
+        if (exists) {
+            throw new IllegalStateException("이미 등록된 즐겨찾기입니다.");
+        }
+
         Bookmark bookmark = new Bookmark();
         bookmark.setUser(user);
         bookmark.setDeal(deal);
@@ -72,7 +76,7 @@ public class BookmarkService {
                 .orElseThrow(() -> new EntityNotFoundException("해당 북마크를 찾을 수 없습니다."));
 
         if (bookmark.getUser().getMno() != user.getMno()) {
-            throw new SecurityException("북마크로 해두지 않았습니다.");
+            throw new SecurityException("해당 사용자는 북마크로 해두지 않았습니다.");
         }
 
         bookmarkRepository.delete(bookmark);
