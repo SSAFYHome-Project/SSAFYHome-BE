@@ -5,7 +5,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class BoardDto {
+public class BoardRegisterRequest {
     private String title;
     private String content;
     private String image;

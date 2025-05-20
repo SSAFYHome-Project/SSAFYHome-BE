@@ -2,6 +2,7 @@ package com.ssafyhome.community.board.controller;
 
 import com.ssafyhome.bookmark.dto.Bookmark;
 import com.ssafyhome.bookmark.service.BookmarkService;
+import com.ssafyhome.community.board.dto.*;
 import com.ssafyhome.community.board.service.BoardService;
 import com.ssafyhome.deal.dto.DealInfo;
 import com.ssafyhome.security.dto.CustomUserDetails;
@@ -21,17 +22,35 @@ public class BoardController {
     private final BoardService boardService;
 
     @GetMapping("/board")
-    public ResponseEntity<?> getBookmarks(@AuthenticationPrincipal CustomUserDetails userDetails) {
-        try {
-            return ResponseEntity.ok(null);
-        } catch (EntityNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("북마크 조회 중 오류가 발생했습니다.");
-        }
+    public ResponseEntity<?> getAllBoard() {
+        List<AllBoardDto> boards = boardService.getAllBoards();
+        return new ResponseEntity<>(boards, HttpStatus.OK);
+    }
+
+    @GetMapping("board/{boardIdx}")
+    public ResponseEntity<?> getBoard(@PathVariable int boardIdx) {
+        BoardDetailDto board = boardService.getBoardById(boardIdx);
+        return new ResponseEntity<>(board, HttpStatus.OK);
+    }
+
+    @PostMapping("/board")
+    public ResponseEntity<?> postBoard(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                       @RequestBody BoardRegisterRequest boardRegisterRequest) {
+        boardService.saveBoard(boardRegisterRequest, userDetails);
+        return ResponseEntity.ok("게시글 등록 완료");
+    }
+
+    @PatchMapping("board/{boardIdx}")
+    public ResponseEntity<?> updateBoard(@PathVariable int boardIdx, @AuthenticationPrincipal CustomUserDetails userDetails,
+                                      @RequestBody BoardPatchRequest boardPatchRequest) {
+        boardService.updateBoard(boardIdx, boardPatchRequest, userDetails);
+        return ResponseEntity.ok("게시글 수정 완료");
+    }
+
+    @DeleteMapping("board/{boardIdx}")
+    public ResponseEntity<?> deleteBoard(@PathVariable int boardIdx, @AuthenticationPrincipal CustomUserDetails userDetails) {
+        boardService.deleteBoard(boardIdx, userDetails);
+        return ResponseEntity.ok("게시글 삭제 완료");
     }
 
 
