@@ -3,7 +3,6 @@ package com.ssafyhome.ai.summary.controller;
 import com.ssafyhome.ai.summary.dto.SummaryDto;
 import com.ssafyhome.ai.summary.service.SummaryService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.ai.openai.OpenAiChatModel;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -11,8 +10,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.HashMap;
 import java.util.Map;
-
-import static io.lettuce.core.pubsub.PubSubOutput.Type.message;
 
 @RequestMapping("/api/map")
 @RestController

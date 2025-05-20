@@ -21,6 +21,8 @@ public class OAuthSuccessHandler implements AuthenticationSuccessHandler {
 
     private final RedirectStrategy redirectStrategy = new DefaultRedirectStrategy();
 
+    private final String localRedirectUrl = "http://localhost:5173/oauth/success";
+
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request,
                                         HttpServletResponse response,
@@ -44,20 +46,10 @@ public class OAuthSuccessHandler implements AuthenticationSuccessHandler {
 
     }
 
-    private String setRedirectUrl(String url) {
-        String redirect_url = null;
-
-        /* 백엔드 개발 환경 */
-        if (url.equals("localhost")) {
-            redirect_url = "http://localhost:8080/oauth/google/success";
+    private String setRedirectUrl(String serverName) {
+        if ("localhost".equals(serverName)) {
+            return localRedirectUrl;
         }
-        /* 프론트 개발 또는 프로덕션 환경 */
-//        else {
-//            log.info("backServerName: " + backServerName);
-//            log.info("url: " + url);
-//            log.info("frontRedirectUrl: " + frontRedirectUrl);
-//            redirect_url = frontRedirectUrl + "/oauth/google/success/ing";
-//        }
-        return redirect_url;
+        return "http://localhost:8080/oauth/google/success";
     }
 }

@@ -1,10 +1,10 @@
-package com.ssafyhome.bookmark.service;
+package com.ssafyhome.community.board.service;
 
 import com.ssafyhome.bookmark.dao.BookmarkRepository;
 import com.ssafyhome.bookmark.dto.Bookmark;
-import com.ssafyhome.deal.dto.DealInfo;
 import com.ssafyhome.deal.dao.DealRepository;
 import com.ssafyhome.deal.dto.Deal;
+import com.ssafyhome.deal.dto.DealInfo;
 import com.ssafyhome.security.dto.CustomUserDetails;
 import com.ssafyhome.user.dto.User;
 import jakarta.persistence.EntityNotFoundException;
@@ -15,7 +15,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class BookmarkService {
+public class BoardService {
     private final BookmarkRepository bookmarkRepository;
     private final DealRepository dealRepository;
 
@@ -52,11 +52,9 @@ public class BookmarkService {
 
         boolean exists = bookmarkRepository.findByUserAndDeal(user, deal).isPresent();
         if (exists) {
-            // 중복 방지: 이미 북마크된 경우에는 저장하지 않음
             throw new IllegalStateException("이미 등록된 즐겨찾기입니다.");
         }
 
-        // 3. 즐겨찾기 저장
         Bookmark bookmark = new Bookmark();
         bookmark.setUser(user);
         bookmark.setDeal(deal);
