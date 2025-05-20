@@ -31,7 +31,8 @@ public class BoardService {
                 board.getBoardView(),
                 board.getUser().getName(),
                 board.getBoardImage(),
-                board.getBoardRegDate()
+                board.getBoardRegDate(),
+                board.getBoardRecommendCnt()
         );
     }
 
