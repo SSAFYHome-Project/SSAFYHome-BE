@@ -6,8 +6,8 @@ import com.ssafyhome.security.dto.CustomUserDetails;
 import com.ssafyhome.user.dto.User;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 
 import java.util.List;
 
@@ -15,6 +15,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class BoardService {
     private final BoardRepository boardRepository;
+    private final RedisTemplate<String, Object> redisTemplate;
+
 
     public List<AllBoardDto> getAllBoards() {
         return boardRepository.findAllBoards();
@@ -24,16 +26,33 @@ public class BoardService {
         Board board = boardRepository.findById(boardIdx)
                 .orElseThrow(() -> new EntityNotFoundException("해당 게시글이 없습니다"));
 
+        String recommendKey = "board:view:" + boardIdx;
+        redisTemplate.opsForValue().increment(recommendKey);
+
+        int recommendCount = getRecommendCount(boardIdx);
+        int viewCount = getViewCount(boardIdx);
+
         return new BoardDetailDto(
                 board.getBoardIdx(),
                 board.getBoardTitle(),
                 board.getBoardContent(),
-                board.getBoardView(),
+                viewCount,
                 board.getUser().getName(),
-                board.getBoardImage(),
                 board.getBoardRegDate(),
-                board.getBoardRecommendCnt()
+                recommendCount
         );
+    }
+
+    public int getRecommendCount(int boardIdx) {
+        String key = "board:recommend:" + boardIdx;
+        Object count = redisTemplate.opsForValue().get(key);
+        return count != null ? Integer.parseInt(count.toString()) : 0;
+    }
+
+    public int getViewCount(int boardIdx) {
+        String key = "board:view:" + boardIdx;
+        Object count = redisTemplate.opsForValue().get(key);
+        return count != null ? Integer.parseInt(count.toString()) : 0;
     }
 
     public void saveBoard(BoardRegisterRequest request, CustomUserDetails userDetails) {
@@ -49,17 +68,14 @@ public class BoardService {
         Board board = new Board();
         board.setBoardTitle(request.getTitle());
         board.setBoardContent(request.getContent());
-        if (StringUtils.hasText(request.getImage())) {
-            board.setBoardImage(request.getImage());
-        } else {
-            board.setBoardImage(null); // 혹은 기본 이미지 URL 넣기
-        }
-        board.setBoardView(0); // 초기 조회수
-        board.setBoardRecommendCnt(0); // 초기 추천수
+        board.setBoardView(0);
+        board.setBoardRecommendCnt(0);
         board.setUser(user);
 
         boardRepository.save(board);
     }
+
+
 
     public void updateBoard(int boardIdx, BoardPatchRequest request, CustomUserDetails userDetails) {
         if (userDetails == null) {
@@ -87,10 +103,6 @@ public class BoardService {
 
         if (request.getContent() != null) {
             board.setBoardContent(request.getContent());
-        }
-
-        if (request.getImage() != null) {
-            board.setBoardImage(request.getImage());
         }
 
         boardRepository.save(board);

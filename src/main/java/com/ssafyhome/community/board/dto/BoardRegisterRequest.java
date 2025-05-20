@@ -8,6 +8,5 @@ import lombok.Setter;
 public class BoardRegisterRequest {
     private String title;
     private String content;
-    private String image;
 }
 

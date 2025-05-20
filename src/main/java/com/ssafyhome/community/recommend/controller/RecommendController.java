@@ -15,9 +15,16 @@ import org.springframework.web.bind.annotation.*;
 public class RecommendController {
     private final RecommendService recommandService;
 
-    @GetMapping("/board/{boardIdx}/recommend")
-    public ResponseEntity<?> getBookmarks(@AuthenticationPrincipal CustomUserDetails userDetails) {
-        return null;
+    @PostMapping("/board/{boardIdx}/recommend")
+    public ResponseEntity<?> postRecommend(@AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable int boardIdx) {
+        recommandService.postRecommend(userDetails, boardIdx);
+        return ResponseEntity.ok("게시글 추천 완료");
+    }
+
+    @DeleteMapping("/board/{boardIdx}/recommend")
+    public ResponseEntity<?> deleteRecommend(@AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable int boardIdx) {
+        recommandService.deleteRecommend(userDetails, boardIdx);
+        return ResponseEntity.ok("게시글 추천 취소 완료");
     }
 
 }

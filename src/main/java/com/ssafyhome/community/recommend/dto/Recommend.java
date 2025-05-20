@@ -11,7 +11,7 @@ public class Recommend {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int bookmarkIdx;
+    private int recommendIdx;
 
     @ManyToOne
     @JoinColumn(name="mno")

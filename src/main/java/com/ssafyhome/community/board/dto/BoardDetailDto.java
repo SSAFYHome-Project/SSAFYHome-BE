@@ -13,18 +13,16 @@ public class BoardDetailDto {
     private String boardContent;
     private int boardView;
     private String userName;
-    private String boardImage;
     private String boardRegDate;
     private int boardRecommendCnt;
 
     public BoardDetailDto(int boardIdx, String boardTitle, String boardContent,
-                          int boardView, String userName, String boardImage, Date boardRegDate, int boardRecommendCnt) {
+                          int boardView, String userName, Date boardRegDate, int boardRecommendCnt) {
         this.boardIdx = boardIdx;
         this.boardTitle = boardTitle;
         this.boardContent = boardContent;
         this.boardView = boardView;
         this.userName = userName;
-        this.boardImage = boardImage;
         this.boardRegDate = formatDate(boardRegDate);
         this.boardRecommendCnt = boardRecommendCnt;
     }

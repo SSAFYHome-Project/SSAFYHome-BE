@@ -26,9 +26,6 @@ public class Board {
 
     private int boardRecommendCnt;
 
-    @Column(columnDefinition = "TEXT")
-    private String boardImage;
-
     @ManyToOne
     @JoinColumn(name="mno")
     private User user;
