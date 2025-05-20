@@ -7,15 +7,29 @@ import lombok.Data;
 import lombok.Getter;
 import org.hibernate.annotations.CreationTimestamp;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 @Getter
-@AllArgsConstructor
 public class AllBoardDto {
 
     private int boardIdx;
-    private String title;
-    private String name;
+    private String boardTitle;
+    private String username;
     private int boardView;
-    private Date createTime;
+    private String boardRegDate;
+
+    public AllBoardDto(int boardIdx, String boardTitle,
+                          int boardView, String username, Date boardRegDate) {
+        this.boardIdx = boardIdx;
+        this.boardTitle = boardTitle;
+        this.boardView = boardView;
+        this.username = username;
+        this.boardRegDate = formatDate(boardRegDate);
+    }
+
+    private String formatDate(Date date) {
+        return new SimpleDateFormat("yyyy-MM-dd HH:mm").format(date);
+    }
+
 }

@@ -31,7 +31,7 @@ public class BoardService {
                 board.getBoardView(),
                 board.getUser().getName(),
                 board.getBoardImage(),
-                board.getBoardRegDate().toString()
+                board.getBoardRegDate()
         );
     }
 
@@ -107,7 +107,7 @@ public class BoardService {
             throw new EntityNotFoundException("사용자 정보를 찾을 수 없습니다.");
         }
 
-        Board board = boardRepository.findById(boardIdx)
+        boardRepository.findById(boardIdx)
                 .orElseThrow(() -> new EntityNotFoundException("게시글이 존재하지 않습니다."));
 
         boolean isAuthor = boardRepository.existsByBoardIdxAndUser(boardIdx, user);
