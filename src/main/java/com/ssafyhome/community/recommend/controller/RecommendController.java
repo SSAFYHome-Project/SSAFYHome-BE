@@ -13,18 +13,13 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/community")
 @RequiredArgsConstructor
 public class RecommendController {
-    private final RecommendService recommandService;
+    private final RecommendService recommendService;
 
     @PostMapping("/board/{boardIdx}/recommend")
-    public ResponseEntity<?> postRecommend(@AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable int boardIdx) {
-        recommandService.postRecommend(userDetails, boardIdx);
-        return ResponseEntity.ok("게시글 추천 완료");
-    }
-
-    @DeleteMapping("/board/{boardIdx}/recommend")
-    public ResponseEntity<?> deleteRecommend(@AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable int boardIdx) {
-        recommandService.deleteRecommend(userDetails, boardIdx);
-        return ResponseEntity.ok("게시글 추천 취소 완료");
+    public ResponseEntity<?> toggleRecommend(@AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable int boardIdx) {
+        boolean isRecommended = recommendService.toggleRecommend(userDetails, boardIdx);
+        String message = isRecommended ? "게시글 추천 완료" : "게시글 추천 취소";
+        return ResponseEntity.ok(message);
     }
 
 }
