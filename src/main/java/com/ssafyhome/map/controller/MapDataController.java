@@ -3,6 +3,11 @@ package com.ssafyhome.map.controller;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.ssafyhome.map.dto.RouteRequest;
+import com.ssafyhome.map.dto.RouteResultDto;
+import com.ssafyhome.map.service.MapService;
+import com.ssafyhome.security.dto.CustomUserDetails;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -18,6 +23,7 @@ public class MapDataController {
 
     private final RegionCodeApiClient regionCodeApiClient;
     private final ApartmentDealApiClient apartmentDealApiClient;
+    private final MapService mapService;
 
     @GetMapping("/sido")
     public String getSido() throws Exception {
@@ -44,5 +50,10 @@ public class MapDataController {
         result.put("rent", new ObjectMapper().readTree(rentJson));
 
         return result;
+    }
+
+    @PostMapping("/route")
+    public RouteResultDto getRoute(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestBody RouteRequest request) throws Exception {
+        return mapService.getRouteComparison(userDetails, request);
     }
 }
