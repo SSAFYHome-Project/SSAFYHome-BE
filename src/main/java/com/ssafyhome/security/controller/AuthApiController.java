@@ -39,13 +39,21 @@ public class AuthApiController {
         try {
             Authentication auth = authenticationManager.authenticate(creds);
             // JWT 생성
-            String token = jwtProvider.generateToken(auth);
+            String accessToken = jwtProvider.generateToken(auth);
+            String refreshToken = jwtProvider.generateRefreshToken(loginRequest.getEmail());
+
+            redisTemplate.opsForValue().set(
+                    "RT:" + loginRequest.getEmail(),
+                    refreshToken,
+                    Duration.ofMillis(jwtProvider.getRefreshTokenValidityInMilliseconds()));
 
             HttpHeaders headers = new HttpHeaders();
-            headers.setBearerAuth(token);
+            headers.setBearerAuth(accessToken);
             return ResponseEntity.ok()
                     .headers(headers)
-                    .body(Map.of("status", "로그인 성공", "token", token));
+                    .body(Map.of("status", "로그인 성공",
+                            "token", accessToken,
+                            "refreshToken", refreshToken));
         } catch (BadCredentialsException e) {
             return ResponseEntity
                     .status(HttpStatus.UNAUTHORIZED)
@@ -55,20 +63,22 @@ public class AuthApiController {
 
     @PostMapping("/logout")
     public ResponseEntity<?> logout(HttpServletRequest req) {
-        String token = jwtProvider.resolveToken(req);
-        if (token != null) {
-            redisTemplate.opsForValue().set(token, "logout", Duration.ofHours(1));
+        String accessToken = jwtProvider.resolveToken(req);
+
+        if (accessToken != null && jwtProvider.validateToken(accessToken)) {
+            String email = jwtProvider.getEmailFromToken(accessToken);
+            redisTemplate.opsForValue().set(
+                    accessToken,
+                    "logout",
+                    Duration.ofMillis(jwtProvider.getTokenValidityInMilliseconds())
+            );
+            redisTemplate.delete("RT:" + email);
         }
-        // 3) JSON 응답
+
         return ResponseEntity.ok(Map.of(
                 "status", "로그아웃 성공",
-                "message", "토큰이 서버 블랙리스트에 등록되었습니다."
+                "message", "AccessToken 블랙리스트 및 RefreshToken 제거 완료"
         ));
     }
-
-//    @GetMapping("/secured")
-//    public ResponseEntity<String> securedTest(Authentication authentication) {
-//        return ResponseEntity.ok("접근된 사용자: " + authentication.getName());
-//    }
 }
 

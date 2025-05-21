@@ -35,6 +35,9 @@ public class JwtTokenProvider {
     @Value("${jwt.token-validity-in-milliseconds}")
     private long tokenValidityInMilliseconds;
 
+    @Value("${jwt.refresh-token-validity-in-milliseconds}")
+    private long refreshTokenValidityInMilliseconds;
+
     private SecretKey secretKey;
 
     private final UserDetailsService userDetailsService;
@@ -62,6 +65,10 @@ public class JwtTokenProvider {
                 .setExpiration(expiry)
                 .signWith(secretKey, SignatureAlgorithm.HS512)
                 .compact();
+    }
+
+    public long getTokenValidityInMilliseconds() {
+        return tokenValidityInMilliseconds;
     }
 
     // HTTP 요청 헤더에서 토큰 추출
@@ -112,5 +119,41 @@ public class JwtTokenProvider {
         UserDetails userDetails = userDetailsService.loadUserByUsername(username);
         return new UsernamePasswordAuthenticationToken(userDetails, "", authorities);
     }
+
+    public String generateRefreshToken(String email) {
+        Date now = new Date();
+        Date expiryDate = new Date(now.getTime() + refreshTokenValidityInMilliseconds); // 7일 예시
+
+        return Jwts.builder()
+                .setSubject(email)
+                .setIssuedAt(now)
+                .setExpiration(expiryDate)
+                .signWith(secretKey, SignatureAlgorithm.HS256)
+                .compact();
+    }
+
+    public boolean validateRefreshToken(String token) {
+        try {
+            Jwts.parserBuilder().setSigningKey(secretKey).build().parseClaimsJws(token);
+            return true;
+        } catch (JwtException | IllegalArgumentException e) {
+            return false;
+        }
+    }
+
+    public String getEmailFromToken(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(secretKey)
+                .build()
+                .parseClaimsJws(token)
+                .getBody()
+                .getSubject();
+    }
+
+    public long getRefreshTokenValidityInMilliseconds() {
+        return refreshTokenValidityInMilliseconds;
+    }
+
+
 }
 
