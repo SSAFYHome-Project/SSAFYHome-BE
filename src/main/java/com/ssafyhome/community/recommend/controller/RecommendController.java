@@ -18,8 +18,7 @@ public class RecommendController {
     @PostMapping("/board/{boardIdx}/recommend")
     public ResponseEntity<?> toggleRecommend(@AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable int boardIdx) {
         boolean isRecommended = recommendService.toggleRecommend(userDetails, boardIdx);
-        String message = isRecommended ? "게시글 추천 완료" : "게시글 추천 취소";
-        return ResponseEntity.ok(message);
+        return ResponseEntity.ok(isRecommended);
     }
 
 }
