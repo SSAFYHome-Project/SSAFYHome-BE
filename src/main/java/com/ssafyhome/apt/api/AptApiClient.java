@@ -30,7 +30,7 @@ public class AptApiClient {
             urlBuilder.append("?serviceKey=").append(encodedKey);
             urlBuilder.append("&sigunguCode=").append(sggCd);
             urlBuilder.append("&pageNo=1");
-            urlBuilder.append("&numOfRows=100");
+            urlBuilder.append("&numOfRows=1000");
             urlBuilder.append("&resultType=json");
             System.out.println("요청 URL: " + urlBuilder);
 
@@ -59,12 +59,21 @@ public class AptApiClient {
             ObjectMapper mapper = new ObjectMapper();
             JsonNode root = mapper.readTree(response.toString());
             JsonNode items = root.path("response").path("body").path("items");
+            
+            String cleanName = aptName
+            		.replaceAll("\\(.*?\\)", "")                // 괄호 제거
+                    .replaceAll("\\d+동[~\\-]\\d+동", "")        // "101동~103동", "101동-103동" 제거
+                    .replaceAll("\\d+(동|단지|차)", "")          // "101동", "2단지", "3차" 제거
+                    .replaceAll("(아파트|맨션|빌라)", "")         // 접미어 제거
+                    .replaceAll("[^가-힣a-zA-Z0-9]", "")         // 특수문자 제거
+                    .replaceAll("\\s+", "")                     // 공백 제거
+                    .trim();
 
             for (JsonNode item : items) {
                 String name = item.path("kaptName").asText();
                 String code = item.path("kaptCode").asText();
 
-                if (name.contains(aptName)) {
+                if (name.contains(cleanName)) {
                     System.out.println("찾은 aptCode: " + code);
                     return code;
                 }
