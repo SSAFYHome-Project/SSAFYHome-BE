@@ -1,6 +1,5 @@
 package com.ssafyhome.community.board.dto;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import java.text.SimpleDateFormat;
@@ -12,19 +11,21 @@ public class BoardDetailDto {
     private String boardTitle;
     private String boardContent;
     private int boardView;
-    private String userName;
+    private String username;
     private String boardRegDate;
     private int boardRecommendCnt;
+    private String userEmail;
 
     public BoardDetailDto(int boardIdx, String boardTitle, String boardContent,
-                          int boardView, String userName, Date boardRegDate, int boardRecommendCnt) {
+                          int boardView, String username, Date boardRegDate, int boardRecommendCnt, String userEmail) {
         this.boardIdx = boardIdx;
         this.boardTitle = boardTitle;
         this.boardContent = boardContent;
         this.boardView = boardView;
-        this.userName = userName;
+        this.username = username;
         this.boardRegDate = formatDate(boardRegDate);
         this.boardRecommendCnt = boardRecommendCnt;
+        this.userEmail = userEmail;
     }
 
     private String formatDate(Date date) {

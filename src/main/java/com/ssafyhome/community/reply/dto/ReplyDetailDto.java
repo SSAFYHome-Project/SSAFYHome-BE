@@ -10,12 +10,14 @@ public class ReplyDetailDto {
     private String replyContent;
     private String replyRegDate;
     private String username;
+    private String userEmail;
 
-    public ReplyDetailDto(int replyIdx, String replyContent, Date replyRegDate, String username) {
+    public ReplyDetailDto(int replyIdx, String replyContent, Date replyRegDate, String username, String userEmail) {
         this.replyIdx = replyIdx;
         this.replyContent = replyContent;
         this.replyRegDate = formatDate(replyRegDate);
         this.username = username;
+        this.userEmail = userEmail;
     }
 
     private String formatDate(Date date) {

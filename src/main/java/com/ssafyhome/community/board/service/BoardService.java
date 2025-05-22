@@ -39,7 +39,8 @@ public class BoardService {
                 viewCount,
                 board.getUser().getName(),
                 board.getBoardRegDate(),
-                recommendCount
+                recommendCount,
+                board.getUser().getEmail()
         );
     }
 
