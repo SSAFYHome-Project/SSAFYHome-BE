@@ -77,7 +77,7 @@ public class AptApiClient {
                     System.out.println("찾은 aptCode: " + code);
                     return code;
                 }
-            }
+            }	
 
             System.out.println("일치하는 아파트 이름 없음");
 
