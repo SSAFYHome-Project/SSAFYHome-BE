@@ -66,7 +66,7 @@ public class CustomSecurityConfig {
             .authorizeHttpRequests(authorize -> authorize
                 .requestMatchers("/api/map/**").permitAll() 
                 .requestMatchers("/api/login", "/api/user/register/**", "/api/apt/**", "/api/community/**", "/api/token/refresh").permitAll()
-                .requestMatchers("/api/user/**", "/api/logout").hasAnyRole("USER", "ADMIN")
+                .requestMatchers("/api/user/**", "/api/logout", "api/chatbot/**").hasAnyRole("USER", "ADMIN")
                 .anyRequest().authenticated()
             )
             .oauth2Login(oauth2 -> oauth2
