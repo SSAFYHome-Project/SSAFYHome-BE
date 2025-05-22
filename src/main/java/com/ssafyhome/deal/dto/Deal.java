@@ -1,14 +1,10 @@
 package com.ssafyhome.deal.dto;
 
-import com.ssafyhome.user.dto.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.CreationTimestamp;
-
-import java.util.Date;
 
 @Entity
 @Data

@@ -1,12 +1,7 @@
 package com.ssafyhome.community.board.dto;
 
-import com.ssafyhome.user.dto.User;
-import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.Getter;
-import org.hibernate.annotations.CreationTimestamp;
 
+import lombok.Getter;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 

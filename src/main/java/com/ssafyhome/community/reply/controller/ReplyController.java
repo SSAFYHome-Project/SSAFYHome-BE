@@ -1,13 +1,9 @@
 package com.ssafyhome.community.reply.controller;
 
-import com.ssafyhome.bookmark.dto.Bookmark;
-import com.ssafyhome.bookmark.service.BookmarkService;
 import com.ssafyhome.community.reply.dto.ReplyDetailDto;
 import com.ssafyhome.community.reply.dto.ReplyRegisterRequest;
 import com.ssafyhome.community.reply.service.ReplyService;
-import com.ssafyhome.deal.dto.DealInfo;
 import com.ssafyhome.security.dto.CustomUserDetails;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

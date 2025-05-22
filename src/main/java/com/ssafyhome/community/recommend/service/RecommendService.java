@@ -1,11 +1,9 @@
 package com.ssafyhome.community.recommend.service;
 
-import com.ssafyhome.bookmark.dto.Bookmark;
 import com.ssafyhome.community.board.dao.BoardRepository;
 import com.ssafyhome.community.board.dto.Board;
 import com.ssafyhome.community.recommend.dao.RecommendRepository;
 import com.ssafyhome.community.recommend.dto.Recommend;
-import com.ssafyhome.deal.dao.DealRepository;
 import com.ssafyhome.security.dto.CustomUserDetails;
 import com.ssafyhome.user.dto.User;
 import jakarta.persistence.EntityNotFoundException;
