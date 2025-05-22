@@ -1,9 +1,7 @@
 package com.ssafyhome.deal.dao;
 
-import com.ssafyhome.bookmark.dto.Bookmark;
 import com.ssafyhome.deal.dto.Deal;
 import com.ssafyhome.deal.dto.dealType;
-import com.ssafyhome.user.dto.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

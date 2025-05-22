@@ -6,7 +6,6 @@ import com.ssafyhome.community.reply.dao.ReplyRepository;
 import com.ssafyhome.community.reply.dto.Reply;
 import com.ssafyhome.community.reply.dto.ReplyDetailDto;
 import com.ssafyhome.community.reply.dto.ReplyRegisterRequest;
-import com.ssafyhome.deal.dto.DealInfo;
 import com.ssafyhome.security.dto.CustomUserDetails;
 import com.ssafyhome.user.dto.User;
 import jakarta.persistence.EntityNotFoundException;

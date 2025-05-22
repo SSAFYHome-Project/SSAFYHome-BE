@@ -5,14 +5,12 @@ import com.ssafyhome.map.dto.RouteRequest;
 import com.ssafyhome.map.dto.RouteResultDto;
 import com.ssafyhome.security.dto.CustomUserDetails;
 import com.ssafyhome.user.dao.AddressRepository;
-import com.ssafyhome.user.dao.UserRepository;
 import com.ssafyhome.user.dto.Address;
 import com.ssafyhome.user.dto.User;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
 import java.util.Map;
 
 @Service

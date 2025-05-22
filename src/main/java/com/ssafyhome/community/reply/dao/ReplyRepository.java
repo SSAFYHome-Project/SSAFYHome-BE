@@ -1,7 +1,5 @@
 package com.ssafyhome.community.reply.dao;
 
-import com.ssafyhome.bookmark.dto.Bookmark;
-import com.ssafyhome.community.board.dto.AllBoardDto;
 import com.ssafyhome.community.board.dto.Board;
 import com.ssafyhome.community.reply.dto.Reply;
 import com.ssafyhome.community.reply.dto.ReplyDetailDto;
