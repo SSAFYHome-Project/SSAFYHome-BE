@@ -40,7 +40,8 @@ public class BoardService {
                 board.getUser().getName(),
                 board.getBoardRegDate(),
                 recommendCount,
-                board.getUser().getEmail()
+                board.getUser().getEmail(),
+                board.getBoardCategory()
         );
     }
 
@@ -71,6 +72,7 @@ public class BoardService {
         board.setBoardContent(request.getContent());
         board.setBoardView(0);
         board.setBoardRecommendCnt(0);
+        board.setBoardCategory(request.getCategory());
         board.setUser(user);
 
         boardRepository.save(board);
@@ -101,6 +103,11 @@ public class BoardService {
         if (request.getTitle() != null) {
             board.setBoardTitle(request.getTitle());
         }
+
+        if (request.getCategory() != null) {
+            board.setBoardCategory(request.getCategory());
+        }
+
 
         if (request.getContent() != null) {
             board.setBoardContent(request.getContent());

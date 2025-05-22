@@ -15,9 +15,11 @@ public class BoardDetailDto {
     private String boardRegDate;
     private int boardRecommendCnt;
     private String userEmail;
+    private CategoryType boardCategory;
 
     public BoardDetailDto(int boardIdx, String boardTitle, String boardContent,
-                          int boardView, String username, Date boardRegDate, int boardRecommendCnt, String userEmail) {
+                          int boardView, String username, Date boardRegDate, int boardRecommendCnt, String userEmail,
+                          CategoryType boardCategory) {
         this.boardIdx = boardIdx;
         this.boardTitle = boardTitle;
         this.boardContent = boardContent;
@@ -26,6 +28,7 @@ public class BoardDetailDto {
         this.boardRegDate = formatDate(boardRegDate);
         this.boardRecommendCnt = boardRecommendCnt;
         this.userEmail = userEmail;
+        this.boardCategory = boardCategory;
     }
 
     private String formatDate(Date date) {

@@ -26,6 +26,8 @@ public class Board {
 
     private int boardRecommendCnt;
 
+    private CategoryType boardCategory;
+
     @ManyToOne
     @JoinColumn(name="mno")
     private User user;

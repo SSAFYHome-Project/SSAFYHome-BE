@@ -8,5 +8,6 @@ import lombok.Setter;
 public class BoardPatchRequest {
     private String title;
     private String content;
+    private CategoryType category;
 }
 
