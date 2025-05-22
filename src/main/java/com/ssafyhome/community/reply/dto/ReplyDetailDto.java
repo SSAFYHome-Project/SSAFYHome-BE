@@ -11,13 +11,15 @@ public class ReplyDetailDto {
     private String replyRegDate;
     private String username;
     private String userEmail;
+    private byte[] profile;
 
-    public ReplyDetailDto(int replyIdx, String replyContent, Date replyRegDate, String username, String userEmail) {
+    public ReplyDetailDto(int replyIdx, String replyContent, Date replyRegDate, String username, String userEmail, byte[] profile) {
         this.replyIdx = replyIdx;
         this.replyContent = replyContent;
         this.replyRegDate = formatDate(replyRegDate);
         this.username = username;
         this.userEmail = userEmail;
+        this.profile = profile;
     }
 
     private String formatDate(Date date) {

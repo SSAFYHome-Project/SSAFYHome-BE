@@ -41,7 +41,8 @@ public class BoardService {
                 board.getBoardRegDate(),
                 recommendCount,
                 board.getUser().getEmail(),
-                board.getBoardCategory()
+                board.getBoardCategory(),
+                board.getUser().getProfile()
         );
     }
 

@@ -13,14 +13,16 @@ public class AllBoardDto {
     private String username;
     private String boardRegDate;
     private CategoryType boardCategory;
+    private byte[] profile;
 
     public AllBoardDto(int boardIdx, String boardTitle,
-                          String username, Date boardRegDate, CategoryType boardCategory) {
+                          String username, Date boardRegDate, CategoryType boardCategory, byte[] profile) {
         this.boardIdx = boardIdx;
         this.boardTitle = boardTitle;
         this.username = username;
         this.boardRegDate = formatDate(boardRegDate);
         this.boardCategory = boardCategory;
+        this.profile = profile;
     }
 
     private String formatDate(Date date) {

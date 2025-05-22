@@ -13,7 +13,7 @@ import java.util.Optional;
 @Repository
 public interface BoardRepository extends JpaRepository<Board, Integer> {
     @Query("SELECT new com.ssafyhome.community.board.dto.AllBoardDto(" +
-            "b.boardIdx, b.boardTitle, b.user.name, b.boardRegDate, b.boardCategory) " +
+            "b.boardIdx, b.boardTitle, b.user.name, b.boardRegDate, b.boardCategory, b.user.profile) " +
             "FROM Board b")
     List<AllBoardDto> findAllBoards();
 

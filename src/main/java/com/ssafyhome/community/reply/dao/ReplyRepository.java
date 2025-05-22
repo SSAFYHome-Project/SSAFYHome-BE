@@ -14,7 +14,7 @@ import java.util.List;
 public interface ReplyRepository extends JpaRepository<Reply, Integer> {
 
     @Query("SELECT new com.ssafyhome.community.reply.dto.ReplyDetailDto(" +
-            "r.replyIdx, r.replyContent, r.replyRegDate, r.user.name, r.user.email) " +
+            "r.replyIdx, r.replyContent, r.replyRegDate, r.user.name, r.user.email, r.user.profile) " +
             "FROM Reply r WHERE r.board = :board")
     List<ReplyDetailDto> findByBoard(@Param("board") Board board);
 }
