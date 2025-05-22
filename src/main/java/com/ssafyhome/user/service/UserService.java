@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 
 import com.ssafyhome.user.dao.AddressRepository;
 import com.ssafyhome.user.dto.*;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -188,6 +189,16 @@ public class UserService {
                 }
             }
         }
+    }
+
+    public String findSchoolOrWorkAddress(String username) {
+        User user = userRepository.findByEmail(username);
+
+        // 우선순위: 직장 > 학교
+        return addressRepository.findByUserAndTitle(user, TitleType.COMPANY)
+                .or(() -> addressRepository.findByUserAndTitle(user, TitleType.SCHOOL))
+                .map(Address::getAddress)
+                .orElse("");
     }
 
 }
