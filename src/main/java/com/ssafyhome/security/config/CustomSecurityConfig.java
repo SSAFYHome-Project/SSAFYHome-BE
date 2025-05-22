@@ -64,8 +64,7 @@ public class CustomSecurityConfig {
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             )
             .authorizeHttpRequests(authorize -> authorize
-                .requestMatchers("/api/map/**").permitAll() 
-                .requestMatchers("/api/login", "/api/user/register/**", "/api/apt/**", "/api/community/**", "/api/token/refresh", "/api/chatbot/**").permitAll()
+                .requestMatchers("/api/map/**", "/api/login", "/api/user/register/**", "/api/apt/**", "/api/community/**", "/api/token/refresh", "/api/chatbot/**").permitAll()
                 .requestMatchers("/api/user/**", "/api/logout").hasAnyRole("USER", "ADMIN")
                 .anyRequest().authenticated()
             )
