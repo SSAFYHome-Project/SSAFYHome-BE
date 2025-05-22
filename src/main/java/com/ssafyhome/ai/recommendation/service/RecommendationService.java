@@ -2,6 +2,7 @@ package com.ssafyhome.ai.recommendation.service;
 
 import com.ssafyhome.ai.recommendation.dto.RecommendationDto;
 import com.ssafyhome.security.dto.CustomUserDetails;
+import com.ssafyhome.user.dto.SchoolWorkAddress;
 import com.ssafyhome.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.ai.chat.messages.Message;
@@ -26,10 +27,10 @@ public class RecommendationService {
         String userEmail = userDetails.getUsername();
 
         // 유저 DB에서 학교/직장 주소 조회
-        String schoolOrWorkAddress = userService.findSchoolOrWorkAddress(userEmail);
+        SchoolWorkAddress address = userService.findSchoolAndWorkAddress(userEmail);
 
         // 프롬프트 생성
-        String promptText = promptService.createChatbotPrompt(dto, schoolOrWorkAddress);
+        String promptText = promptService.createChatbotPrompt(dto, address.getWorkAddress(), address.getSchoolAddress());
 
         // GPT 요청 메시지 구성
         UserMessage userMessage = new UserMessage(promptText);

@@ -191,14 +191,19 @@ public class UserService {
         }
     }
 
-    public String findSchoolOrWorkAddress(String username) {
+    public SchoolWorkAddress findSchoolAndWorkAddress(String username) {
         User user = userRepository.findByEmail(username);
 
-        // 우선순위: 직장 > 학교
-        return addressRepository.findByUserAndTitle(user, TitleType.COMPANY)
-                .or(() -> addressRepository.findByUserAndTitle(user, TitleType.SCHOOL))
+        String workAddress = addressRepository.findByUserAndTitle(user, TitleType.COMPANY)
                 .map(Address::getAddress)
                 .orElse("");
+
+        String schoolAddress = addressRepository.findByUserAndTitle(user, TitleType.SCHOOL)
+                .map(Address::getAddress)
+                .orElse("");
+
+        return new SchoolWorkAddress(workAddress, schoolAddress);
     }
+
 
 }

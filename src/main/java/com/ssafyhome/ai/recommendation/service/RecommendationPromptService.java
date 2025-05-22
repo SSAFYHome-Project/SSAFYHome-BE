@@ -6,10 +6,21 @@ import org.springframework.stereotype.Service;
 @Service
 public class RecommendationPromptService {
 
-    public String createChatbotPrompt(RecommendationDto dto, String schoolOrWorkAddress) {
+    public String createChatbotPrompt(RecommendationDto dto, String workAddress, String schoolAddress) {
         String childrenAgeLine = (dto.getChildrenAge() == null || dto.getChildrenAge().isEmpty())
                 ? ""
                 : String.format("- 아이 나이: %s\n", dto.getChildrenAge());
+
+        StringBuilder addressLine = new StringBuilder();
+        if (workAddress != null && !workAddress.isBlank()) {
+            addressLine.append(String.format("- 직장 주소: %s\n", workAddress));
+        }
+        if (schoolAddress != null && !schoolAddress.isBlank()) {
+            addressLine.append(String.format("- 학교 주소: %s\n", schoolAddress));
+        }
+        if (addressLine.length() == 0) {
+            addressLine.append("- 학교 및 직장 주소: 제공되지 않음 (고려하지 않아도 됩니다.)\n");
+        }
 
         return String.format(
                 "다음은 한 사용자의 주거 조건입니다.\n\n" +
@@ -18,12 +29,12 @@ public class RecommendationPromptService {
                         "- 예산: %s\n" +
                         "- 평수: %s\n" +
                         "- 가족 구성: %s\n" +
-                        "%s" + // 아이 나이 줄 (조건부 출력)
+                        "%s" +
                         "- 주요 교통수단: %s\n" +
                         "- 야간 귀가 여부: %s\n" +
                         "- 선호하는 분위기: %s\n" +
-                        "- 학교 또는 직장 주소: %s (※ 이 항목이 비어 있다면 고려하지 않아도 됩니다.)\n\n" +
-                        "이 사용자의 조건을 고려했을 때, %s ㅌ내에서 거주하기에 적합한 동네를 1~2곳 추천해 주세요.\n" +
+                        "%s\n" +
+                        "이 사용자의 조건을 고려했을 때, %s 내에서 거주하기에 적합한 동네를 1~2곳 추천해 주세요.\n" +
                         "추천 동네명과 함께, 각 동네가 이 조건들과 어떻게 잘 맞는지 이유도 구체적으로 설명해 주세요.\n" +
                         "특히 학교나 직장 주소가 제공된 경우, 해당 지역과의 거리나 접근성도 함께 고려해 주세요.\n\n" +
                         "답변은 400자 이내로 사용자에게 설명하는 친절하고 자연스러운 말투로 작성해 주세요. (직관적인 이모티콘을 사용해도 좋아요!)",
@@ -36,9 +47,8 @@ public class RecommendationPromptService {
                 dto.getTransport(),
                 dto.getNightReturn(),
                 dto.getMood(),
-                (schoolOrWorkAddress == null || schoolOrWorkAddress.isEmpty()) ? "제공되지 않음" : schoolOrWorkAddress,
+                addressLine.toString().trim(),
                 dto.getRegion()
         );
     }
-
 }
