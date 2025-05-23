@@ -21,7 +21,6 @@ public class RecentViewController {
     @GetMapping("/recentView")
     public ResponseEntity<?> getRecentSearch(@AuthenticationPrincipal CustomUserDetails userDetails) {
         try {
-
             List<DealInfo> recentViewInfo =  recentViewService.getRecentView(userDetails);
             return ResponseEntity.ok(recentViewInfo);
         } catch (EntityNotFoundException e) {

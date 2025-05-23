@@ -1,6 +1,7 @@
 package com.ssafyhome.ai.summary.service;
 
 import com.ssafyhome.ai.summary.dto.SummaryDto;
+import com.ssafyhome.common.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.ai.chat.messages.Message;
 import org.springframework.ai.chat.messages.UserMessage;
@@ -49,8 +50,11 @@ public class SummaryService {
                 .maxTokens(350)
                 .build();
 
-        Prompt prompt = new Prompt(messages.toString(), options);
-
-        return openAiChatModel.call(prompt).getResult().getOutput().getText();
+        try {
+            Prompt prompt = new Prompt(messages, options);
+            return openAiChatModel.call(prompt).getResult().getOutput().getText();
+        } catch (Exception e) {
+            throw new BusinessException("지역 요약 생성 중 오류가 발생했습니다: " + e.getMessage(), e);
+        }
     }
 }

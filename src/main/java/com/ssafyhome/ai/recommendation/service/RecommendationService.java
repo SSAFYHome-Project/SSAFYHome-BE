@@ -1,6 +1,7 @@
 package com.ssafyhome.ai.recommendation.service;
 
 import com.ssafyhome.ai.recommendation.dto.RecommendationDto;
+import com.ssafyhome.common.util.UserUtils;
 import com.ssafyhome.security.dto.CustomUserDetails;
 import com.ssafyhome.user.dto.SchoolWorkAddress;
 import com.ssafyhome.user.service.UserService;
@@ -24,7 +25,7 @@ public class RecommendationService {
     private final RecommendationPromptService promptService;
 
     public String recommendationArea(CustomUserDetails userDetails, RecommendationDto dto) {
-        String userEmail = userDetails.getUsername();
+        String userEmail = UserUtils.getEmailFromUserDetails(userDetails);
 
         // 유저 DB에서 학교/직장 주소 조회
         SchoolWorkAddress address = userService.findSchoolAndWorkAddress(userEmail);

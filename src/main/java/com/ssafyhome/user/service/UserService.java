@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.ssafyhome.common.util.UserUtils;
 import com.ssafyhome.user.dao.AddressRepository;
 import com.ssafyhome.user.dto.*;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -106,14 +107,7 @@ public class UserService {
 
     @Transactional(readOnly = true) // 데이터 조회 작업
     public UserInfo getUserInfoFromDetails(CustomUserDetails userDetails) {
-        if (userDetails == null) {
-            throw new IllegalArgumentException("인증 정보가 유효하지 않습니다.");
-        }
-
-        User user = userDetails.getUser();
-        if (user == null) {
-            throw new EntityNotFoundException("사용자 정보를 찾을 수 없습니다.");
-        }
+        User user = UserUtils.getUserFromUserDetails(userDetails);
 
         List<AddressDto> addressDtos = addressRepository.findByUser(user).stream()
                 .map(addr -> {
@@ -140,23 +134,14 @@ public class UserService {
 
     @Transactional
     public void deleteUser(CustomUserDetails userDetails) {
-        if (userDetails == null) {
-            throw new IllegalArgumentException("인증 정보가 유효하지 않습니다.");
-        }
-        String currentUsername = userDetails.getUsername();
-        User user = userRepository.findByEmail(currentUsername);
+        User user = UserUtils.getUserFromUserDetails(userDetails);
 
         userRepository.delete(user);
     }
 
     @Transactional
     public void updateUserInfo(CustomUserDetails userDetails, UserPatchRequest request) {
-        if (userDetails == null) {
-            throw new IllegalArgumentException("인증 정보가 유효하지 않습니다.");
-        }
-
-        String currentUsername = userDetails.getUsername();
-        User user = userRepository.findByEmail(currentUsername);
+        User user = UserUtils.getUserFromUserDetails(userDetails);
 
         if (StringUtils.hasText(request.getName())) {
             user.setName(request.getName());

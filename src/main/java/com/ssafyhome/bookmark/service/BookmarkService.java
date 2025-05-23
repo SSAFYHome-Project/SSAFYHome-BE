@@ -2,6 +2,7 @@ package com.ssafyhome.bookmark.service;
 
 import com.ssafyhome.bookmark.dao.BookmarkRepository;
 import com.ssafyhome.bookmark.dto.Bookmark;
+import com.ssafyhome.common.util.UserUtils;
 import com.ssafyhome.deal.dto.DealInfo;
 import com.ssafyhome.deal.dao.DealRepository;
 import com.ssafyhome.deal.dto.Deal;
@@ -20,30 +21,13 @@ public class BookmarkService {
     private final DealRepository dealRepository;
 
     public List<Bookmark> getBookmark(CustomUserDetails userDetails) {
-        if (userDetails == null) {
-            throw new IllegalArgumentException("인증 정보가 유효하지 않습니다.");
-        }
+        User user = UserUtils.getUserFromUserDetails(userDetails);
 
-        User user = userDetails.getUser();
-
-        if (user == null) {
-            throw new EntityNotFoundException("사용자 정보를 찾을 수 없습니다.");
-        }
-
-        return bookmarkRepository.findByUser(userDetails.getUser());
+        return bookmarkRepository.findByUser(user);
     }
 
     public void saveBookmark(CustomUserDetails userDetails, DealInfo bookmarkInfo) {
-        if (userDetails == null) {
-            throw new IllegalArgumentException("인증 정보가 유효하지 않습니다.");
-        }
-
-        User user = userDetails.getUser();
-
-        if (user == null) {
-            throw new EntityNotFoundException("사용자 정보를 찾을 수 없습니다.");
-        }
-
+        User user = UserUtils.getUserFromUserDetails(userDetails);
         Deal deal = dealRepository
                 .findByAptNameAndDealTypeAndRegionCodeAndJibunAndDealAmountAndDealYearAndDealMonthAndDealDayAndFloor(
                         bookmarkInfo.getAptName(), bookmarkInfo.getDealType(), bookmarkInfo.getRegionCode(), bookmarkInfo.getJibun(),
@@ -64,15 +48,7 @@ public class BookmarkService {
     }
 
     public void deleteBookmark(CustomUserDetails userDetails, int bookmarkIdx) {
-        if (userDetails == null) {
-            throw new IllegalArgumentException("인증 정보가 유효하지 않습니다.");
-        }
-
-        User user = userDetails.getUser();
-
-        if (user == null) {
-            throw new EntityNotFoundException("사용자 정보를 찾을 수 없습니다.");
-        }
+        User user = UserUtils.getUserFromUserDetails(userDetails);
 
         Bookmark bookmark = bookmarkRepository.findById(bookmarkIdx)
                 .orElseThrow(() -> new EntityNotFoundException("해당 북마크를 찾을 수 없습니다."));

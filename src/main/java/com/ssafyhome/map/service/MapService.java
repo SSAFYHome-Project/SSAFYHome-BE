@@ -1,5 +1,6 @@
 package com.ssafyhome.map.service;
 
+import com.ssafyhome.common.util.UserUtils;
 import com.ssafyhome.map.api.KakaoMobilityApiClient;
 import com.ssafyhome.map.dto.RouteRequest;
 import com.ssafyhome.map.dto.RouteResultDto;
@@ -21,14 +22,7 @@ public class MapService {
     private final KakaoMobilityApiClient kakaoMobilityApiClient;
 
     public RouteResultDto getRouteComparison(CustomUserDetails userDetails, RouteRequest request) throws Exception {
-        if (userDetails == null) {
-            throw new IllegalArgumentException("인증 정보가 유효하지 않습니다.");
-        }
-
-        User user = userDetails.getUser();
-        if (user == null) {
-            throw new EntityNotFoundException("사용자 정보를 찾을 수 없습니다.");
-        }
+        User user = UserUtils.getUserFromUserDetails(userDetails);
 
         Address start = addressRepository.findByUserAndTitle(user, request.getTitle())
                 .orElseThrow(() -> new EntityNotFoundException("주소 없음"));

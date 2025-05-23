@@ -1,5 +1,6 @@
 package com.ssafyhome.community.board.service;
 
+import com.ssafyhome.common.util.UserUtils;
 import com.ssafyhome.community.board.dao.BoardImageRepository;
 import com.ssafyhome.community.board.dao.BoardRepository;
 import com.ssafyhome.community.board.dto.*;
@@ -71,15 +72,8 @@ public class BoardService {
     }
 
     public void saveBoard(BoardRegisterRequest request, CustomUserDetails userDetails) {
-        if (userDetails == null) {
-            throw new IllegalArgumentException("인증 정보가 유효하지 않습니다.");
-        }
+        User user = UserUtils.getUserFromUserDetails(userDetails);
 
-        User user = userDetails.getUser();
-
-        if (user == null) {
-            throw new EntityNotFoundException("사용자 정보를 찾을 수 없습니다.");
-        }
         Board board = new Board();
         board.setBoardTitle(request.getTitle());
         board.setBoardContent(request.getContent());
@@ -109,15 +103,7 @@ public class BoardService {
 
 
     public void updateBoard(int boardIdx, BoardPatchRequest request, CustomUserDetails userDetails) {
-        if (userDetails == null) {
-            throw new IllegalArgumentException("인증 정보가 유효하지 않습니다.");
-        }
-
-        User user = userDetails.getUser();
-
-        if (user == null) {
-            throw new EntityNotFoundException("사용자 정보를 찾을 수 없습니다.");
-        }
+        User user = UserUtils.getUserFromUserDetails(userDetails);
 
         Board board = boardRepository.findById(boardIdx)
                 .orElseThrow(() -> new EntityNotFoundException("게시글이 존재하지 않습니다."));
@@ -172,15 +158,7 @@ public class BoardService {
     }
 
     public void deleteBoard(int boardIdx, CustomUserDetails userDetails) {
-        if (userDetails == null) {
-            throw new IllegalArgumentException("인증 정보가 유효하지 않습니다.");
-        }
-
-        User user = userDetails.getUser();
-
-        if (user == null) {
-            throw new EntityNotFoundException("사용자 정보를 찾을 수 없습니다.");
-        }
+        User user = UserUtils.getUserFromUserDetails(userDetails);
 
         Board board = boardRepository.findById(boardIdx)
                 .orElseThrow(() -> new EntityNotFoundException("게시글이 존재하지 않습니다."));
