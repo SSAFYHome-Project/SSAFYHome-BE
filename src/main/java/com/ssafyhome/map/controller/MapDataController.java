@@ -7,6 +7,8 @@ import com.ssafyhome.map.dto.RouteRequest;
 import com.ssafyhome.map.dto.RouteResultDto;
 import com.ssafyhome.map.service.MapService;
 import com.ssafyhome.security.dto.CustomUserDetails;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -41,15 +43,22 @@ public class MapDataController {
     }
 
     @GetMapping("/search")
-    public Map<String, Object> getDeals(@RequestParam int regionCode, @RequestParam int yyyymm) throws Exception {
-        String tradeJson = apartmentDealApiClient.fetchTradeDeals(regionCode, yyyymm);
-        String rentJson = apartmentDealApiClient.fetchRentDeals(regionCode, yyyymm);
+    public ResponseEntity<?> getDeals(@RequestParam int regionCode, @RequestParam int yyyymm) {
+        try {
+            String tradeJson = apartmentDealApiClient.fetchTradeDeals(regionCode, yyyymm);
+            String rentJson = apartmentDealApiClient.fetchRentDeals(regionCode, yyyymm);
 
-        Map<String, Object> result = new HashMap<>();
-        result.put("trade", new ObjectMapper().readTree(tradeJson));
-        result.put("rent", new ObjectMapper().readTree(rentJson));
+            Map<String, Object> result = new HashMap<>();
+            result.put("trade", new ObjectMapper().readTree(tradeJson));
+            result.put("rent", new ObjectMapper().readTree(rentJson));
 
-        return result;
+            return ResponseEntity.ok(result);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("잘못된 검색 조건입니다: " + e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("거래 정보 조회 중 오류가 발생했습니다.");
+        }
     }
 
     @PostMapping("/route")

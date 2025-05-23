@@ -1,5 +1,6 @@
 package com.ssafyhome.community.reply.service;
 
+import com.ssafyhome.common.util.UserUtils;
 import com.ssafyhome.community.board.dao.BoardRepository;
 import com.ssafyhome.community.board.dto.Board;
 import com.ssafyhome.community.reply.dao.ReplyRepository;
@@ -21,6 +22,7 @@ public class ReplyService {
     private final ReplyRepository replyRepository;
     private final BoardRepository boardRepository;
 
+    @Transactional(readOnly = true)
     public List<ReplyDetailDto> getReply(int boardIdx) {
         Board board = boardRepository.findById(boardIdx)
                 .orElseThrow(() -> new EntityNotFoundException("해당 게시글이 없습니다"));
@@ -31,15 +33,7 @@ public class ReplyService {
     @Transactional
     public void saveReply(CustomUserDetails userDetails, ReplyRegisterRequest replyRegisterRequest,
                           int boardIdx) {
-        if (userDetails == null) {
-            throw new IllegalArgumentException("인증 정보가 유효하지 않습니다.");
-        }
-
-        User user = userDetails.getUser();
-
-        if (user == null) {
-            throw new EntityNotFoundException("사용자 정보를 찾을 수 없습니다.");
-        }
+        User user = UserUtils.getUserFromUserDetails(userDetails);
 
         Board board = boardRepository.findById(boardIdx)
                 .orElseThrow(() -> new EntityNotFoundException("해당 게시글이 없습니다"));

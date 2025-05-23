@@ -1,16 +1,16 @@
 package com.ssafyhome.common.exception;
 
-/**
- * 인증 관련 예외를 처리하는 클래스
- */
-public class AuthenticationException extends RuntimeException {
+public class AuthenticationException extends BaseException {
 
     public AuthenticationException(String message) {
-        super(message);
+        super(ErrorCode.AUTHENTICATION_FAILED, message);
     }
 
-    public AuthenticationException(String message, Throwable cause) {
-        super(message, cause);
+    public AuthenticationException(ErrorCode errorCode) {
+        super(errorCode);
+    }
+
+    public AuthenticationException(ErrorCode errorCode, String message) {
+        super(errorCode, message);
     }
 }
-

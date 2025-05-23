@@ -1,15 +1,24 @@
 package com.ssafyhome.common.exception;
 
-/**
- * 비즈니스 로직 관련 예외를 처리하는 클래스
- */
-public class BusinessException extends RuntimeException {
+public class BusinessException extends BaseException {
 
     public BusinessException(String message) {
-        super(message);
+        super(ErrorCode.INTERNAL_SERVER_ERROR, message);
+    }
+
+    public BusinessException(ErrorCode errorCode) {
+        super(errorCode);
+    }
+
+    public BusinessException(ErrorCode errorCode, String message) {
+        super(errorCode, message);
     }
 
     public BusinessException(String message, Throwable cause) {
-        super(message, cause);
+        super(ErrorCode.INTERNAL_SERVER_ERROR, message, cause);
+    }
+
+    public BusinessException(ErrorCode errorCode, String message, Throwable cause) {
+        super(errorCode, message, cause);
     }
 }

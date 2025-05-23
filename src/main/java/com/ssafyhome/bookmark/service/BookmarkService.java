@@ -2,6 +2,8 @@ package com.ssafyhome.bookmark.service;
 
 import com.ssafyhome.bookmark.dao.BookmarkRepository;
 import com.ssafyhome.bookmark.dto.Bookmark;
+import com.ssafyhome.common.exception.BusinessException;
+import com.ssafyhome.common.exception.ErrorCode;
 import com.ssafyhome.common.util.UserUtils;
 import com.ssafyhome.deal.dto.DealInfo;
 import com.ssafyhome.deal.dao.DealRepository;
@@ -28,17 +30,17 @@ public class BookmarkService {
 
     public void saveBookmark(CustomUserDetails userDetails, DealInfo bookmarkInfo) {
         User user = UserUtils.getUserFromUserDetails(userDetails);
-        Deal deal = dealRepository
-                .findByAptNameAndDealTypeAndRegionCodeAndJibunAndDealAmountAndDealYearAndDealMonthAndDealDayAndFloor(
-                        bookmarkInfo.getAptName(), bookmarkInfo.getDealType(), bookmarkInfo.getRegionCode(), bookmarkInfo.getJibun(),
-                        bookmarkInfo.getDealAmount(), bookmarkInfo.getDealYear(), bookmarkInfo.getDealMonth(), bookmarkInfo.getDealDay(), bookmarkInfo.getFloor()
-                ).orElseGet(() -> dealRepository.save(bookmarkInfo.toEntity()));
+        Deal deal = findOrCreateDeal(bookmarkInfo);
+//        Deal deal = dealRepository
+//                .findByAptNameAndDealTypeAndRegionCodeAndJibunAndDealAmountAndDealYearAndDealMonthAndDealDayAndFloor(
+//                        bookmarkInfo.getAptName(), bookmarkInfo.getDealType(), bookmarkInfo.getRegionCode(), bookmarkInfo.getJibun(),
+//                        bookmarkInfo.getDealAmount(), bookmarkInfo.getDealYear(), bookmarkInfo.getDealMonth(), bookmarkInfo.getDealDay(), bookmarkInfo.getFloor()
+//                ).orElseGet(() -> dealRepository.save(bookmarkInfo.toEntity()));
 
-        boolean exists = bookmarkRepository.findByUserAndDeal(user, deal).isPresent();
-        if (exists) {
-            // 중복 방지: 이미 북마크된 경우에는 저장하지 않음
-            throw new IllegalStateException("이미 등록된 즐겨찾기입니다.");
+        if (bookmarkRepository.findByUserAndDeal(user, deal).isPresent()) {
+            throw new BusinessException(ErrorCode.BOOKMARK_ALREADY_EXISTS, "이미 등록된 즐겨찾기입니다.");
         }
+
 
         // 3. 즐겨찾기 저장
         Bookmark bookmark = new Bookmark();
@@ -54,9 +56,21 @@ public class BookmarkService {
                 .orElseThrow(() -> new EntityNotFoundException("해당 북마크를 찾을 수 없습니다."));
 
         if (bookmark.getUser().getMno() != user.getMno()) {
-            throw new SecurityException("해당 사용자는 북마크로 해두지 않았습니다.");
+            throw new BusinessException(ErrorCode.ACCESS_DENIED, "해당 사용자는 북마크로 해두지 않았습니다.");
         }
 
         bookmarkRepository.delete(bookmark);
+    }
+
+    private Deal findOrCreateDeal(DealInfo dealInfo) {
+        return dealRepository
+                .findByAptNameAndDealTypeAndRegionCodeAndJibunAndDealAmountAndDealYearAndDealMonthAndDealDayAndFloor(
+                        dealInfo.getAptName(), dealInfo.getDealType(), dealInfo.getRegionCode(), dealInfo.getJibun(),
+                        dealInfo.getDealAmount(), dealInfo.getDealYear(), dealInfo.getDealMonth(), dealInfo.getDealDay(), dealInfo.getFloor()
+                )
+                .orElseGet(() -> {
+                    Deal newDeal = dealInfo.toEntity();
+                    return dealRepository.save(newDeal);
+                });
     }
 }

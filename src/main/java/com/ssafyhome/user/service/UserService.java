@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.ssafyhome.common.exception.BusinessException;
+import com.ssafyhome.common.exception.ErrorCode;
 import com.ssafyhome.common.util.UserUtils;
 import com.ssafyhome.user.dao.AddressRepository;
 import com.ssafyhome.user.dto.*;
@@ -36,7 +38,7 @@ public class UserService {
     @Transactional
     public void signup(UserRegisterRequest request) {
         if (isEmailDuplicate(request.getEmail())) {
-            throw new IllegalArgumentException("이미 사용 중인 이메일입니다: " + request.getEmail());
+            throw new BusinessException(ErrorCode.EMAIL_ALREADY_EXISTS, "이미 사용 중인 이메일입니다: " + request.getEmail());
         }
 
         User user = new User();
@@ -75,6 +77,7 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public boolean isEmailDuplicate(String email) {
+
         return userRepository.findByEmail(email) != null;
     }
 
@@ -82,12 +85,12 @@ public class UserService {
     public void changePassword(String email, String currentPassword, String newPassword) {
         User user = userRepository.findByEmail(email);
         if (user == null) {
-            throw new UsernameNotFoundException("사용자를 찾을 수 없습니다: " + email);
+            throw new EntityNotFoundException("사용자를 찾을 수 없습니다: " + email);
         }
 
         // 현재 비밀번호 검증
         if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
-            throw new BadCredentialsException("현재 비밀번호가 일치하지 않습니다.");
+            throw new BusinessException(ErrorCode.INVALID_PASSWORD, "현재 비밀번호가 일치하지 않습니다.");
         }
 
         // 새 비밀번호 유효성 검사
@@ -100,8 +103,8 @@ public class UserService {
     }
 
     private void validatePassword(String password) {
-        if (password == null) {
-            throw new IllegalArgumentException("비밀번호를 입력해주세요.");
+        if (password == null || password.trim().isEmpty() ) {
+            throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE, "비밀번호를 입력해주세요.");
         }
     }
 
@@ -210,6 +213,10 @@ public class UserService {
     public SchoolWorkAddress findSchoolAndWorkAddress(String username) {
         User user = userRepository.findByEmail(username);
 
+        if (user == null) {
+            throw new EntityNotFoundException("사용자를 찾을 수 없습니다: " + username);
+        }
+
         String workAddress = addressRepository.findByUserAndTitle(user, TitleType.COMPANY)
                 .map(Address::getAddress)
                 .orElse("");
@@ -244,7 +251,7 @@ public class UserService {
     public void resetPassword(String email) {
         User user = userRepository.findByEmail(email);
         if (user == null) {
-            throw new IllegalArgumentException("해당 이메일로 등록된 사용자가 없습니다: " + email);
+            throw new BusinessException(ErrorCode.USER_NOT_FOUND, "해당 이메일로 등록된 사용자가 없습니다: " + email);
         }
 
         // 임시 비밀번호 생성 (8자리)
