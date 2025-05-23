@@ -16,7 +16,7 @@ public class BoardDetailDto {
     private String boardContent;
     private int boardView;
     private String username;
-    private LocalDateTime boardRegDate;
+    private String boardRegDate;
     private int boardRecommendCnt;
     private String userEmail;
     private CategoryType boardCategory;
@@ -31,7 +31,7 @@ public class BoardDetailDto {
         this.boardContent = boardContent;
         this.boardView = boardView;
         this.username = username;
-        this.boardRegDate = boardRegDate;
+        this.boardRegDate = boardRegDate.format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
         this.boardRecommendCnt = boardRecommendCnt;
         this.userEmail = userEmail;
         this.boardCategory = boardCategory;

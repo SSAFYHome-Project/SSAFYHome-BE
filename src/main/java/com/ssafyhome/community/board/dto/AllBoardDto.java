@@ -12,7 +12,7 @@ public class AllBoardDto {
     private int boardIdx;
     private String boardTitle;
     private String username;
-    private LocalDateTime boardRegDate;
+    private String boardRegDate;
     private CategoryType boardCategory;
     private byte[] profile;
 
@@ -21,7 +21,7 @@ public class AllBoardDto {
         this.boardIdx = boardIdx;
         this.boardTitle = boardTitle;
         this.username = username;
-        this.boardRegDate = boardRegDate;
+        this.boardRegDate = boardRegDate.format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
         this.boardCategory = boardCategory;
         this.profile = profile;
     }
