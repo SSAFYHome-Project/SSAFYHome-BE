@@ -2,6 +2,7 @@ package com.ssafyhome.user.service;
 
 import java.io.IOException;
 import java.net.URL;
+import java.security.SecureRandom;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -28,6 +29,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final AddressRepository addressRepository;
     private final PasswordEncoder passwordEncoder;
+    private final EmailService emailService;
 
     @Transactional
     public void signup(UserRegisterRequest request) {
@@ -224,5 +226,35 @@ public class UserService {
         }).collect(Collectors.toList());
     }
 
+    @Transactional
+    public void resetPassword(String email) {
+        User user = userRepository.findByEmail(email);
+        if (user == null) {
+            throw new IllegalArgumentException("해당 이메일로 등록된 사용자가 없습니다: " + email);
+        }
+
+        // 임시 비밀번호 생성 (8자리)
+        String tempPassword = generateRandomPassword(8);
+
+        // 비밀번호 암호화 및 저장
+        user.setPassword(passwordEncoder.encode(tempPassword));
+        userRepository.save(user);
+
+        // 이메일 전송
+        emailService.sendPasswordResetEmail(email, tempPassword);
+    }
+
+    private String generateRandomPassword(int length) {
+        String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()";
+        SecureRandom random = new SecureRandom();
+        StringBuilder sb = new StringBuilder();
+
+        for (int i = 0; i < length; i++) {
+            int randomIndex = random.nextInt(chars.length());
+            sb.append(chars.charAt(randomIndex));
+        }
+
+        return sb.toString();
+    }
 
 }
