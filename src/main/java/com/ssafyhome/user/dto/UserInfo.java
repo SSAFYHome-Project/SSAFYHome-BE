@@ -18,4 +18,5 @@ public class UserInfo {
     private String role;
     private List<AddressDto> address;
     private byte[] profile;
+    private boolean passwordResetRequired;
 }

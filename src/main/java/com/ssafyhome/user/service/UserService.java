@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 
 import com.ssafyhome.user.dao.AddressRepository;
 import com.ssafyhome.user.dto.*;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -76,6 +77,33 @@ public class UserService {
         return userRepository.findByEmail(email) != null;
     }
 
+    @Transactional
+    public void changePassword(String email, String currentPassword, String newPassword) {
+        User user = userRepository.findByEmail(email);
+        if (user == null) {
+            throw new UsernameNotFoundException("사용자를 찾을 수 없습니다: " + email);
+        }
+
+        // 현재 비밀번호 검증
+        if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
+            throw new BadCredentialsException("현재 비밀번호가 일치하지 않습니다.");
+        }
+
+        // 새 비밀번호 유효성 검사
+        validatePassword(newPassword);
+
+        // 비밀번호 변경
+        user.setPassword(passwordEncoder.encode(newPassword));
+        user.setPasswordResetRequired(false); // 비밀번호 변경 완료
+        userRepository.save(user);
+    }
+
+    private void validatePassword(String password) {
+        if (password == null) {
+            throw new IllegalArgumentException("비밀번호를 입력해주세요.");
+        }
+    }
+
     @Transactional(readOnly = true) // 데이터 조회 작업
     public UserInfo getUserInfoFromDetails(CustomUserDetails userDetails) {
         if (userDetails == null) {
@@ -105,7 +133,8 @@ public class UserService {
                 user.getPassword(),
                 user.getRole(),
                 addressDtos,
-                user.getProfile()
+                user.getProfile(),
+                user.isPasswordResetRequired()
         );
     }
 
@@ -222,7 +251,7 @@ public class UserService {
                         return dto;
                     }).collect(Collectors.toList());
 
-            return new UserInfo(user.getName(), user.getEmail(), user.getPassword(), user.getRole(), addressDtos, user.getProfile());
+            return new UserInfo(user.getName(), user.getEmail(), user.getPassword(), user.getRole(), addressDtos, user.getProfile(), user.isPasswordResetRequired());
         }).collect(Collectors.toList());
     }
 
@@ -238,6 +267,7 @@ public class UserService {
 
         // 비밀번호 암호화 및 저장
         user.setPassword(passwordEncoder.encode(tempPassword));
+        user.setPasswordResetRequired(true);
         userRepository.save(user);
 
         // 이메일 전송

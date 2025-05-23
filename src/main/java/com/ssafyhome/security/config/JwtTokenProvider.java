@@ -153,6 +153,22 @@ public class JwtTokenProvider {
         return refreshTokenValidityInMilliseconds;
     }
 
+    public Long getExpiration(String token) {
+        try {
+            Claims claims = Jwts.parserBuilder()
+                    .setSigningKey(secretKey)
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
+
+            Date expiration = claims.getExpiration();
+            Date now = new Date();
+            long remainingTime = expiration.getTime() - now.getTime();
+            return remainingTime > 0 ? remainingTime : 0L;
+        } catch (Exception e) {
+            return 0L;
+        }
+    }
 
 }
 

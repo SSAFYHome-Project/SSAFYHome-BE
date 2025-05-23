@@ -27,4 +27,6 @@ public class User {
 
     @Lob
     private byte[] profile;
+
+    private boolean passwordResetRequired = false;
 }

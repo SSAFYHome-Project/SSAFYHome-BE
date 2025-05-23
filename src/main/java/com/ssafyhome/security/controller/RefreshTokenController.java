@@ -28,14 +28,14 @@ public class RefreshTokenController {
     @PostMapping("/refresh")
     public ResponseEntity<?> refreshToken(@RequestBody Map<String, String> body) {
         String refreshToken = body.get("refreshToken");
-        String oldAccessToken = body.get("token");
+        String oldAccessToken = body.get("accessToken");
 
         if (!jwtTokenProvider.validateRefreshToken(refreshToken)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("유효하지 않은 리프레시 토큰입니다.");
         }
 
         String email = jwtTokenProvider.getEmailFromToken(refreshToken);
-        String storedRefreshToken = redisTemplate.opsForValue().get("RT:" + email);
+        String storedRefreshToken = redisTemplate.opsForValue().get(email);
 
         if (storedRefreshToken == null || !storedRefreshToken.equals(refreshToken)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("토큰 정보가 일치하지 않거나 만료되었습니다.");
@@ -56,12 +56,12 @@ public class RefreshTokenController {
         String newRefreshToken = jwtTokenProvider.generateRefreshToken(email);
 
         redisTemplate.opsForValue().set(
-                "RT:" + email,
+                email,
                 newRefreshToken,
                 Duration.ofMillis(jwtTokenProvider.getRefreshTokenValidityInMilliseconds())
         );
 
-        return ResponseEntity.ok(Map.of("token", newAccessToken, "refreshToken", newRefreshToken));
+        return ResponseEntity.ok(Map.of("accessToken", newAccessToken, "refreshToken", newRefreshToken));
     }
 }
 
