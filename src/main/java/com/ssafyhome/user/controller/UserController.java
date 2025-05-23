@@ -29,17 +29,31 @@ public class UserController {
         @RequestPart("data") UserRegisterRequest request,
         @RequestPart(value = "profileImage", required = false) MultipartFile profileImage
     ) {
-        request.setProfileImage(profileImage);
-        userService.signup(request);
-        return ResponseEntity.ok("회원가입 성공");
+        try {
+            request.setProfileImage(profileImage);
+            userService.signup(request);
+            return ResponseEntity.ok("회원가입 성공");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("회원가입 실패: " + e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("회원가입 처리 중 오류가 발생했습니다.");
+        }
     }
 
 
     @GetMapping("/register/dup")
-    public ResponseEntity<Boolean> checkEmailDuplicate(@RequestParam String email) {
-        boolean isDuplicate = userService.isEmailDuplicate(email);
-        // true면 중복된 이메일
-        return ResponseEntity.ok(isDuplicate);
+    public ResponseEntity<?> checkEmailDuplicate(@RequestParam String email) {
+        try {
+            boolean isDuplicate = userService.isEmailDuplicate(email);
+            // true면 중복된 이메일
+            return ResponseEntity.ok(isDuplicate);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("잘못된 이메일 형식입니다: " + e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("이메일 중복 확인 중 오류가 발생했습니다.");
+        }
     }
 
     @PostMapping("/reset-password")
