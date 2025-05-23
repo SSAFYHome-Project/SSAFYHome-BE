@@ -5,6 +5,7 @@ import com.ssafyhome.community.board.service.BoardService;
 import com.ssafyhome.security.dto.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -29,16 +30,17 @@ public class BoardController {
         return new ResponseEntity<>(board, HttpStatus.OK);
     }
 
-    @PostMapping("/board")
+    @PostMapping(value = "/board", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> postBoard(@AuthenticationPrincipal CustomUserDetails userDetails,
-                                       @RequestBody BoardRegisterRequest boardRegisterRequest) {
+                                       @ModelAttribute BoardRegisterRequest boardRegisterRequest) {
         boardService.saveBoard(boardRegisterRequest, userDetails);
         return ResponseEntity.ok("게시글 등록 완료");
     }
 
-    @PatchMapping("board/{boardIdx}")
-    public ResponseEntity<?> updateBoard(@PathVariable int boardIdx, @AuthenticationPrincipal CustomUserDetails userDetails,
-                                      @RequestBody BoardPatchRequest boardPatchRequest) {
+    @PatchMapping(value = "board/{boardIdx}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> updateBoard(@PathVariable int boardIdx,
+                                         @AuthenticationPrincipal CustomUserDetails userDetails,
+                                         @ModelAttribute BoardPatchRequest boardPatchRequest) {
         boardService.updateBoard(boardIdx, boardPatchRequest, userDetails);
         return ResponseEntity.ok("게시글 수정 완료");
     }

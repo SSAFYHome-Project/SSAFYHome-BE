@@ -12,9 +12,8 @@ import java.util.Optional;
 
 @Repository
 public interface BoardRepository extends JpaRepository<Board, Integer> {
-    @Query("SELECT new com.ssafyhome.community.board.dto.AllBoardDto(" +
-            "b.boardIdx, b.boardTitle, b.user.name, b.boardRegDate, b.boardCategory, b.user.profile) " +
-            "FROM Board b")
+    @Query("SELECT new com.ssafyhome.community.board.dto.AllBoardDto(b.boardIdx, b.boardTitle, u.name, b.boardRegDate, b.boardCategory, u.profile) " +
+            "FROM Board b JOIN b.user u")
     List<AllBoardDto> findAllBoards();
 
     boolean existsByBoardIdxAndUser(int boardIdx, User user);

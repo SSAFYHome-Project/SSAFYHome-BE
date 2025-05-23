@@ -1,5 +1,6 @@
 package com.ssafyhome.community.board.service;
 
+import com.ssafyhome.community.board.dao.BoardImageRepository;
 import com.ssafyhome.community.board.dao.BoardRepository;
 import com.ssafyhome.community.board.dto.*;
 import com.ssafyhome.security.dto.CustomUserDetails;
@@ -8,15 +9,19 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class BoardService {
     private final BoardRepository boardRepository;
+    private final BoardImageRepository boardImageRepository;
     private final RedisTemplate<String, Object> redisTemplate;
-
+    private final S3Service s3Service;
 
     public List<AllBoardDto> getAllBoards() {
         return boardRepository.findAllBoards();
@@ -32,7 +37,11 @@ public class BoardService {
         int recommendCount = getRecommendCount(boardIdx);
         int viewCount = getViewCount(boardIdx);
 
-        return new BoardDetailDto(
+        List<String> imageUrls = board.getImages().stream()
+                .map(BoardImage::getImageUrl)
+                .collect(Collectors.toList());
+
+        BoardDetailDto boardDetailDto = new BoardDetailDto(
                 board.getBoardIdx(),
                 board.getBoardTitle(),
                 board.getBoardContent(),
@@ -44,6 +53,9 @@ public class BoardService {
                 board.getBoardCategory(),
                 board.getUser().getProfile()
         );
+
+        boardDetailDto.setImageUrls(imageUrls);
+        return boardDetailDto;
     }
 
     public int getRecommendCount(int boardIdx) {
@@ -77,6 +89,21 @@ public class BoardService {
         board.setUser(user);
 
         boardRepository.save(board);
+
+        // 이미지 처리
+        if (request.getImages() != null && !request.getImages().isEmpty()) {
+            for (MultipartFile image : request.getImages()) {
+                try {
+                    String imageUrl = s3Service.uploadFile(image);
+                    String s3Key = s3Service.getS3KeyFromUrl(imageUrl);
+                    BoardImage boardImage = new BoardImage(imageUrl, s3Key);
+                    board.addImage(boardImage);
+                } catch (IOException e) {
+                    throw new RuntimeException("이미지 업로드 중 오류가 발생했습니다.", e);
+                }
+            }
+            boardRepository.save(board);
+        }
     }
 
 
@@ -113,6 +140,32 @@ public class BoardService {
         if (request.getContent() != null) {
             board.setBoardContent(request.getContent());
         }
+        // 이미지 삭제 처리
+        if (request.getImagesToDelete() != null && !request.getImagesToDelete().isEmpty()) {
+            for (String imageUrl : request.getImagesToDelete()) {
+                String s3Key = s3Service.getS3KeyFromUrl(imageUrl);
+
+                // 이미지 엔티티 찾기 및 삭제
+                board.getImages().removeIf(image -> image.getS3Key().equals(s3Key));
+
+                // S3에서 파일 삭제
+                s3Service.deleteFile(s3Key);
+            }
+        }
+
+        // 새 이미지 추가
+        if (request.getNewImages() != null && !request.getNewImages().isEmpty()) {
+            for (MultipartFile image : request.getNewImages()) {
+                try {
+                    String imageUrl = s3Service.uploadFile(image);
+                    String s3Key = s3Service.getS3KeyFromUrl(imageUrl);
+                    BoardImage boardImage = new BoardImage(imageUrl, s3Key);
+                    board.addImage(boardImage);
+                } catch (IOException e) {
+                    throw new RuntimeException("이미지 업로드 중 오류가 발생했습니다.", e);
+                }
+            }
+        }
 
         boardRepository.save(board);
 
@@ -129,7 +182,7 @@ public class BoardService {
             throw new EntityNotFoundException("사용자 정보를 찾을 수 없습니다.");
         }
 
-        boardRepository.findById(boardIdx)
+        Board board = boardRepository.findById(boardIdx)
                 .orElseThrow(() -> new EntityNotFoundException("게시글이 존재하지 않습니다."));
 
         boolean isAuthor = boardRepository.existsByBoardIdxAndUser(boardIdx, user);
@@ -137,6 +190,11 @@ public class BoardService {
         if (!isAuthor) {
             throw new IllegalArgumentException("게시글 작성자만 삭제할 수 있습니다.");
         }
+        // S3에서 이미지 삭제
+        for (BoardImage image : board.getImages()) {
+            s3Service.deleteFile(image.getS3Key());
+        }
+
 
         boardRepository.deleteById(boardIdx);
 
