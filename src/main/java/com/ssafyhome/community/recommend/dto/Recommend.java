@@ -9,9 +9,9 @@ import lombok.Data;
 @Data
 public class Recommend {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int recommendIdx;
+	@Id
+    @Column(name = "bookmark_idx")
+    private int bookmarkIdx;
 
     @ManyToOne
     @JoinColumn(name="mno")

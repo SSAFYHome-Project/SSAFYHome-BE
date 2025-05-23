@@ -15,15 +15,17 @@ public class AllBoardDto {
     private String boardRegDate;
     private CategoryType boardCategory;
     private byte[] profile;
+    private String imageUrl;
 
     public AllBoardDto(int boardIdx, String boardTitle,
-                          String username, LocalDateTime boardRegDate, CategoryType boardCategory, byte[] profile) {
+                          String username, LocalDateTime boardRegDate, CategoryType boardCategory, byte[] profile, String imageUrl) {
         this.boardIdx = boardIdx;
         this.boardTitle = boardTitle;
         this.username = username;
         this.boardRegDate = boardRegDate.format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
         this.boardCategory = boardCategory;
         this.profile = profile;
+        this.imageUrl = imageUrl;
     }
 
 }
