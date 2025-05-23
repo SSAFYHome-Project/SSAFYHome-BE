@@ -31,11 +31,6 @@ public class BookmarkService {
     public void saveBookmark(CustomUserDetails userDetails, DealInfo bookmarkInfo) {
         User user = UserUtils.getUserFromUserDetails(userDetails);
         Deal deal = findOrCreateDeal(bookmarkInfo);
-//        Deal deal = dealRepository
-//                .findByAptNameAndDealTypeAndRegionCodeAndJibunAndDealAmountAndDealYearAndDealMonthAndDealDayAndFloor(
-//                        bookmarkInfo.getAptName(), bookmarkInfo.getDealType(), bookmarkInfo.getRegionCode(), bookmarkInfo.getJibun(),
-//                        bookmarkInfo.getDealAmount(), bookmarkInfo.getDealYear(), bookmarkInfo.getDealMonth(), bookmarkInfo.getDealDay(), bookmarkInfo.getFloor()
-//                ).orElseGet(() -> dealRepository.save(bookmarkInfo.toEntity()));
 
         if (bookmarkRepository.findByUserAndDeal(user, deal).isPresent()) {
             throw new BusinessException(ErrorCode.BOOKMARK_ALREADY_EXISTS, "이미 등록된 즐겨찾기입니다.");

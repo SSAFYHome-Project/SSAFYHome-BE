@@ -21,23 +21,16 @@ public class RecentViewService {
     private final RedisTemplate<String, DealInfo> recentViewRedisTemplate;
 
     public List<DealInfo> getRecentView(CustomUserDetails userDetails) {
+        String key = UserUtils.getUserFromUserDetails(userDetails).getEmail();
         try {
-            User user = UserUtils.getUserFromUserDetails(userDetails);
-            String key = user.getEmail();
-
-            if (!isRedisAvailable()) {
-                return new ArrayList<>();
-            }
+            if (!isRedisAvailable()) return new ArrayList<>();
 
             List<DealInfo> result = recentViewRedisTemplate.opsForList().range(key, 0, -1);
             return result != null ? result : new ArrayList<>();
 
         } catch (RedisSystemException e) {
             log.error("Redis 시스템 오류로 최근 본 매물을 불러올 수 없습니다: {}", e.getMessage());
-            try {
-                User user = UserUtils.getUserFromUserDetails(userDetails);
-                recentViewRedisTemplate.delete(user.getEmail());
-            } catch (Exception ignored) {}
+            recentViewRedisTemplate.delete(key); // ❗ 데이터 깨졌을 가능성 제거
             return new ArrayList<>();
         } catch (Exception e) {
             log.error("최근 본 매물 조회 중 오류 발생: {}", e.getMessage());
@@ -49,10 +42,6 @@ public class RecentViewService {
         try {
             User user = UserUtils.getUserFromUserDetails(userDetails);
             String key = user.getEmail();
-
-            if (!isRedisAvailable() || dealInfo == null) {
-                return;
-            }
 
             List<DealInfo> existingList = recentViewRedisTemplate.opsForList().range(key, 0, -1);
             if (existingList != null && existingList.contains(dealInfo)) {
@@ -75,10 +64,6 @@ public class RecentViewService {
         try {
             User user = UserUtils.getUserFromUserDetails(userDetails);
             String key = user.getEmail();
-
-            if (!isRedisAvailable()) {
-                throw new RuntimeException("서비스를 사용할 수 없습니다.");
-            }
 
             List<DealInfo> recentList = recentViewRedisTemplate.opsForList().range(key, 0, -1);
             if (recentList == null || !recentList.contains(dealInfo)) {

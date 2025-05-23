@@ -84,4 +84,57 @@ public class RedisUtils {
         }
     }
 
+    public static <T> void addToList(RedisTemplate<String, T> redisTemplate, String key, T value, int maxSize) {
+        try {
+            if (!isRedisAvailable(redisTemplate)) {
+                throw new BusinessException(ErrorCode.REDIS_CONNECTION_ERROR, "Redis 서버에 연결할 수 없습니다.");
+            }
+
+            // 중복 체크
+            List<T> existingList = redisTemplate.opsForList().range(key, 0, -1);
+            if (existingList != null && existingList.contains(value)) {
+                return;
+            }
+
+            redisTemplate.opsForList().leftPush(key, value);
+
+            // 최대 크기 유지
+            Long size = redisTemplate.opsForList().size(key);
+            if (size != null && size > maxSize) {
+                redisTemplate.opsForList().rightPop(key);
+            }
+        } catch (RedisConnectionFailureException e) {
+            throw new BusinessException(ErrorCode.REDIS_CONNECTION_ERROR, "Redis 연결 실패: " + e.getMessage(), e);
+        } catch (Exception e) {
+            throw new BusinessException("Redis 리스트 작업 중 오류가 발생했습니다: " + e.getMessage(), e);
+        }
+    }
+
+    public static <T> void removeFromList(RedisTemplate<String, T> redisTemplate, String key, T value) {
+        try {
+            if (!isRedisAvailable(redisTemplate)) {
+                throw new BusinessException(ErrorCode.REDIS_CONNECTION_ERROR, "Redis 서버에 연결할 수 없습니다.");
+            }
+
+            redisTemplate.opsForList().remove(key, 0, value);
+        } catch (RedisConnectionFailureException e) {
+            throw new BusinessException(ErrorCode.REDIS_CONNECTION_ERROR, "Redis 연결 실패: " + e.getMessage(), e);
+        } catch (Exception e) {
+            throw new BusinessException("Redis 리스트에서 항목 제거 중 오류가 발생했습니다: " + e.getMessage(), e);
+        }
+    }
+
+    public static <T> void incrementCounter(RedisTemplate<String, T> redisTemplate, String key) {
+        try {
+            if (!isRedisAvailable(redisTemplate)) {
+                throw new BusinessException(ErrorCode.REDIS_CONNECTION_ERROR, "Redis 서버에 연결할 수 없습니다.");
+            }
+
+            redisTemplate.opsForValue().increment(key);
+        } catch (RedisConnectionFailureException e) {
+            throw new BusinessException(ErrorCode.REDIS_CONNECTION_ERROR, "Redis 연결 실패: " + e.getMessage(), e);
+        } catch (Exception e) {
+            throw new BusinessException("Redis 카운터 증가 중 오류가 발생했습니다: " + e.getMessage(), e);
+        }
+    }
 }
