@@ -27,6 +27,7 @@ public class Board {
 
     private String boardTitle;
 
+    @Column(columnDefinition = "LONGTEXT")
     private String boardContent;
 
     private int boardView;

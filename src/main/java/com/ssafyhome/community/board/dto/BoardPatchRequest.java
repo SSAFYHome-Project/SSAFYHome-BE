@@ -1,4 +1,4 @@
-package com.ssafyhome.community.board.dto;
+	package com.ssafyhome.community.board.dto;
 
 import lombok.Getter;
 import lombok.Setter;
