@@ -5,6 +5,7 @@ import java.net.URL;
 import java.security.SecureRandom;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import com.ssafyhome.common.exception.BusinessException;
@@ -35,8 +36,16 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
 
+    private static final String EMAIL_PATTERN =
+            "^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,7}$";
+
+    private static final Pattern EMAIL_REGEX = Pattern.compile(EMAIL_PATTERN);
+
     @Transactional
     public void signup(UserRegisterRequest request) {
+
+        validateSignupRequest(request);
+
         if (isEmailDuplicate(request.getEmail())) {
             throw new BusinessException(ErrorCode.EMAIL_ALREADY_EXISTS, "이미 사용 중인 이메일입니다: " + request.getEmail());
         }
@@ -74,11 +83,42 @@ public class UserService {
         }
 
     }
+    private void validateSignupRequest(UserRegisterRequest request) {
+        // 이름 검사
+        if (!StringUtils.hasText(request.getName()) || request.getName().trim().isEmpty()) {
+            throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE, "이름을 입력해주세요.");
+        }
+
+        if (request.getName().trim().length() < 2 || request.getName().trim().length() > 50) {
+            throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE, "이름은 2자 이상 50자 이하로 입력해주세요.");
+        }
+
+        // 이메일 검사
+        validateEmail(request.getEmail());
+
+        // 비밀번호 검사
+        validatePassword(request.getPassword());
+    }
+
 
     @Transactional(readOnly = true)
     public boolean isEmailDuplicate(String email) {
 
         return userRepository.findByEmail(email) != null;
+    }
+
+    private void validateEmail(String email) {
+        if (!StringUtils.hasText(email) || email.trim().isEmpty()) {
+            throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE, "이메일을 입력해주세요.");
+        }
+
+        if (!EMAIL_REGEX.matcher(email.trim()).matches()) {
+            throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE, "올바른 이메일 형식이 아닙니다.");
+        }
+
+        if (email.trim().length() > 255) {
+            throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE, "이메일은 255자 이하로 입력해주세요.");
+        }
     }
 
     @Transactional
@@ -105,6 +145,10 @@ public class UserService {
     private void validatePassword(String password) {
         if (password == null || password.trim().isEmpty() ) {
             throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE, "비밀번호를 입력해주세요.");
+        }
+
+        if (password.length() < 8) {
+            throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE, "비밀번호는 8자 이상이어야 합니다.");
         }
     }
 

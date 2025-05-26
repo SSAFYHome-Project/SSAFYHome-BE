@@ -26,7 +26,7 @@ public class KakaoMobilityApiClient {
 
     public Map<String, Object> getDrivingInfo(double sx, double sy, double ex, double ey) throws Exception {
         try {String url = BASE_URL +
-                "origin=" + sx + "," + sy +
+                "?origin=" + sx + "," + sy +
                 "&destination=" + ex + "," + ey +
                 "&priority=RECOMMEND";
 
