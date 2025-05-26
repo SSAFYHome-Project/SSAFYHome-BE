@@ -13,6 +13,7 @@ import lombok.Setter;
 public class BoardImage {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "image_idx")
     private int imageIdx;
 
     @Column(nullable = false)

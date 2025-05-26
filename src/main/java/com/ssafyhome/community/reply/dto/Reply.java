@@ -14,12 +14,14 @@ public class Reply {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "reply_idx")
     private int replyIdx;
 
+    @Column(name = "reply_content")
     private String replyContent;
 
     @ManyToOne
-    @JoinColumn(name="boardIdx")
+    @JoinColumn(name="board_idx")
     private Board board;
 
     @ManyToOne
@@ -27,5 +29,6 @@ public class Reply {
     private User user;
 
     @CreationTimestamp
+    @Column(name = "reply_reg_date")
     private Date replyRegDate;
 }

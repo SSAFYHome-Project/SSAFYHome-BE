@@ -50,20 +50,25 @@ public class DealInfo {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         DealInfo that = (DealInfo) o;
-        return dealAmount == that.dealAmount &&
+        return deposit == that.deposit &&
+                monthlyRent == that.monthlyRent &&
+                dealAmount == that.dealAmount &&
+                Float.compare(that.excluUseAr, excluUseAr) == 0 &&
                 dealYear == that.dealYear &&
                 dealMonth == that.dealMonth &&
                 dealDay == that.dealDay &&
                 floor == that.floor &&
-                aptName.equals(that.aptName) &&
+                buildYear == that.buildYear &&
+                Objects.equals(aptName, that.aptName) &&
                 dealType == that.dealType &&
-                regionCode.equals(that.regionCode) &&
-                jibun.equals(that.jibun);
+                Objects.equals(regionCode, that.regionCode) &&
+                Objects.equals(jibun, that.jibun);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(aptName, dealType, regionCode, jibun, dealAmount, dealYear, dealMonth, dealDay, floor);
+        return Objects.hash(aptName, dealType, regionCode, jibun, deposit, monthlyRent,
+                dealAmount, excluUseAr, dealYear, dealMonth, dealDay, floor, buildYear);
     }
 
 }

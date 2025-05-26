@@ -14,6 +14,7 @@ public class Bookmark {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "bookmark_idx")
     private int bookmarkIdx;
 
     @ManyToOne
@@ -26,5 +27,6 @@ public class Bookmark {
 
 
     @CreationTimestamp
-    private Date reg_date;
+    @Column(name = "reg_date")
+    private Date regDate;
 }

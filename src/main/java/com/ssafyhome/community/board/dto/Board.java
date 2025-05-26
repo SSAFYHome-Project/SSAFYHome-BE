@@ -20,20 +20,25 @@ public class Board {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "board_idx")
     private int boardIdx;
 
-    @Column
+    @Column(name = "board_reg_date")
     private LocalDateTime boardRegDate = LocalDateTime.now();
 
+    @Column(name = "board_title", length = 200)
     private String boardTitle;
 
-    @Column(columnDefinition = "LONGTEXT")
+    @Column(name = "board_content", columnDefinition = "LONGTEXT")
     private String boardContent;
 
+    @Column(name = "board_view")
     private int boardView;
 
+    @Column(name = "board_recommend_cnt")
     private int boardRecommendCnt;
 
+    @Column(name = "board_category")
     private CategoryType boardCategory;
 
     @ManyToOne

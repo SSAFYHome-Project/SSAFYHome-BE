@@ -10,8 +10,8 @@ import lombok.Data;
 public class Recommend {
 
 	@Id
-    @Column(name = "bookmark_idx")
-    private int bookmarkIdx;
+    @Column(name = "recommend_idx")
+    private int recommendIdx;
 
     @ManyToOne
     @JoinColumn(name="mno")

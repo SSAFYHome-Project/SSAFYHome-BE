@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Slf4j
 @Service
@@ -44,8 +45,14 @@ public class RecentViewService {
             String key = user.getEmail();
 
             List<DealInfo> existingList = recentViewRedisTemplate.opsForList().range(key, 0, -1);
-            if (existingList != null && existingList.contains(dealInfo)) {
-                return;
+            if (existingList != null) {
+                // 완전히 같은 DealInfo 객체가 있으면 제거
+                for (DealInfo existing : existingList) {
+                    if (isDealInfoEqual(existing, dealInfo)) {
+                        recentViewRedisTemplate.opsForList().remove(key, 0, existing);
+                        break;
+                    }
+                }
             }
 
             recentViewRedisTemplate.opsForList().leftPush(key, dealInfo);
@@ -58,6 +65,24 @@ public class RecentViewService {
         } catch (Exception e) {
             log.error("최근 본 매물 저장 중 오류 발생: {}", e.getMessage());
         }
+    }
+
+    private boolean isDealInfoEqual(DealInfo deal1, DealInfo deal2) {
+        if (deal1 == null || deal2 == null) return false;
+
+        return Objects.equals(deal1.getAptName(), deal2.getAptName()) &&
+                deal1.getDealType() == deal2.getDealType() &&
+                Objects.equals(deal1.getRegionCode(), deal2.getRegionCode()) &&
+                Objects.equals(deal1.getJibun(), deal2.getJibun()) &&
+                deal1.getDeposit() == deal2.getDeposit() &&
+                deal1.getMonthlyRent() == deal2.getMonthlyRent() &&
+                deal1.getDealAmount() == deal2.getDealAmount() &&
+                Float.compare(deal1.getExcluUseAr(), deal2.getExcluUseAr()) == 0 &&
+                deal1.getDealYear() == deal2.getDealYear() &&
+                deal1.getDealMonth() == deal2.getDealMonth() &&
+                deal1.getDealDay() == deal2.getDealDay() &&
+                deal1.getFloor() == deal2.getFloor() &&
+                deal1.getBuildYear() == deal2.getBuildYear();
     }
 
     public void deleteRecentView(CustomUserDetails userDetails, DealInfo dealInfo) {
