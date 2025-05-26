@@ -26,7 +26,9 @@ public class RecommendationController {
     public ResponseEntity<?> chat(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestBody RecommendationDto recommendationDto) {
         try {
             String result = recommendationService.recommendationArea(userDetails, recommendationDto);
+            System.out.println("result:" + result);
             Map<String, String> response = new HashMap<>();
+
             response.put("recommend", result);
             return ResponseEntity.ok(response);
         } catch (IllegalArgumentException e) {

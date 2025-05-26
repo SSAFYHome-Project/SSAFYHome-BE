@@ -40,7 +40,7 @@ public class SummaryService {
                         "- 시도: %s\n" +
                         "- 시군구: %s\n" +
                         "- 읍면동: %s",
-                dto.getSido(), dto.getSigun(), dto.getUmd());
+                dto.getSido(), dto.getGigun(), dto.getUmd());
 
         UserMessage userMessage = new UserMessage(content);
         List<Message> messages = List.of(userMessage);
