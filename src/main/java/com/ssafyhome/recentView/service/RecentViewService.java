@@ -21,9 +21,17 @@ public class RecentViewService {
 
     private final RedisTemplate<String, DealInfo> recentViewRedisTemplate;
 
+    private String getRedisKey(User user) {
+        return "user:" + user.getEmail() + ":recentView";
+    }
+
+
     public List<DealInfo> getRecentView(CustomUserDetails userDetails) {
-        String key = UserUtils.getUserFromUserDetails(userDetails).getEmail();
         try {
+
+            User user = UserUtils.getUserFromUserDetails(userDetails);
+            String key = getRedisKey(user);
+
             if (!isRedisAvailable()) return new ArrayList<>();
 
             List<DealInfo> result = recentViewRedisTemplate.opsForList().range(key, 0, -1);
@@ -31,7 +39,6 @@ public class RecentViewService {
 
         } catch (RedisSystemException e) {
             log.error("Redis 시스템 오류로 최근 본 매물을 불러올 수 없습니다: {}", e.getMessage());
-            recentViewRedisTemplate.delete(key);
             return new ArrayList<>();
         } catch (Exception e) {
             log.error("최근 본 매물 조회 중 오류 발생: {}", e.getMessage());
@@ -42,7 +49,7 @@ public class RecentViewService {
     public void saveRecentView(CustomUserDetails userDetails, DealInfo dealInfo) {
         try {
             User user = UserUtils.getUserFromUserDetails(userDetails);
-            String key = user.getEmail();
+            String key = "user:" + user.getEmail() + ":recentView";
 
             List<DealInfo> existingList = recentViewRedisTemplate.opsForList().range(key, 0, -1);
             if (existingList != null) {
@@ -88,7 +95,7 @@ public class RecentViewService {
     public void deleteRecentView(CustomUserDetails userDetails, DealInfo dealInfo) {
         try {
             User user = UserUtils.getUserFromUserDetails(userDetails);
-            String key = user.getEmail();
+            String key = getRedisKey(user);
 
             List<DealInfo> recentList = recentViewRedisTemplate.opsForList().range(key, 0, -1);
             if (recentList == null || !recentList.contains(dealInfo)) {
