@@ -185,6 +185,18 @@ public class UserService {
 
         userRepository.delete(user);
     }
+    
+    @Transactional
+    public void deleteUserByEmail(String email) {
+        validateEmail(email); // 이메일 형식 검증
+
+        User user = userRepository.findByEmail(email);
+        if (user == null) {
+            throw new UsernameNotFoundException("해당 이메일(" + email + ")에 해당하는 사용자가 없습니다.");
+        }
+
+        userRepository.delete(user);
+    }
 
     @Transactional
     public void updateUserInfo(CustomUserDetails userDetails, UserPatchRequest request) {

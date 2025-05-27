@@ -41,7 +41,6 @@ public class UserInfoController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("사용자 정보 조회 중 오류가 발생했습니다.");
         }
-
     }
 
     @PatchMapping(value = "/info", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -60,7 +59,6 @@ public class UserInfoController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("회원 정보 업데이트 중 오류가 발생했습니다.");
         }
-
     }
 
     @DeleteMapping("/info")
@@ -78,7 +76,5 @@ public class UserInfoController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("회원 정보 삭제 중 오류가 발생했습니다.");
         }
-
-
     }
 }
