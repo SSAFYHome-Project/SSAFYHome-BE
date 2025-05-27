@@ -322,5 +322,34 @@ public class UserService {
 
         return sb.toString();
     }
+    
+    @Transactional(readOnly = true)
+    public List<UserInfo> getAllUserInfo() {
+        List<User> users = userRepository.findAll();
+
+        return users.stream().map(user -> {
+            List<AddressDto> addressDtos = addressRepository.findByUser(user).stream()
+                    .map(addr -> {
+                        AddressDto dto = new AddressDto();
+                        dto.setTitle(addr.getTitle());
+                        dto.setAddress(addr.getAddress());
+                        dto.setDetailAddress(addr.getDetailAddress());
+                        dto.setX(addr.getX());
+                        dto.setY(addr.getY());
+                        return dto;
+                    }).collect(Collectors.toList());
+
+            return new UserInfo(
+                    user.getName(),
+                    user.getEmail(),
+                    user.getPassword(),
+                    user.getRole(),
+                    addressDtos,
+                    user.getProfile(),
+                    user.isPasswordResetRequired()
+            );
+        }).collect(Collectors.toList());
+    }
+
 
 }
